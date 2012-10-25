@@ -1,17 +1,20 @@
-\documentclass[14pt]{beamer}
+\documentclass[14pt,xcolor=dvipsnames]{beamer}
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
 \usepackage{hyperref}
-\usetheme[secheader]{Boadilla}
-\usefonttheme{serif}
+%\usepackage[svgnames]{xcolor}
+%\usetheme[secheader]{Boadilla}
+%\usefonttheme{sans}
+\setbeamersize{text margin left=1cm,text margin right=1cm}
 
-\title{3D-Tumorvisualisation}
-\subtitle{Endpräsentation}
+\title{Die Burrows-Wheeler-Transformation}
+\subtitle{Proseminar \glqq Algorithmen der Bioinformatik\grqq}
 \author{Uli Köhler}
-\institute[EMG]{Ernst-Mach-Gymnasium Haar}
-\date{24.~Januar 2011}
+\date{12.~November 2012}
 
+%Colors
+\definecolor{darkgreen}{rgb}{136,100,62}
 
 \AtBeginSection[]{} % for optional outline or other recurrent slide
 
@@ -23,101 +26,98 @@
 \end{frame}
 
 \section{Kernkonzepte}
-%%%%%%
 \subsection{Burrows-Wheeler-Transformation}
+%%%%%% 	
 \begin{frame}[allowframebreaks]
- \frametitle{BWT - Beispiel}
+ \frametitle{BWT - Kompression}
+    \begin{columns}[c,onlytextwidth]
+    \column{0.55\textwidth}
     \begin{itemize}
-	\item Eingabestring: \textit{abbab}
+	\item Eingabestring: \textit{aabrac}
+	\item Bildung aller zyklischen Rotationen des Eingabestrings
     \end{itemize}
-    \begin{tabular}{cccccc}
+    \column{0.45\textwidth}
+    \begin{tabular}{c|c}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & aabrac \\
+    1 & abraca \\
+    2 & bracaa \\
+    3 & racaab \\
+    4 & acaabr \\
+    5 & caabra \\
     \end{tabular}
-    
+    \end{columns}
 \end{frame}
-%%%%%%
-\subsection{Plattformen zur Berechnung der Visualisationsdaten}
+%%%%%% Sorting
 \begin{frame}
- \frametitle{Plattformen zur Berechnung der Visualisationsdaten}
-\vspace{8mm}	
- \begin{center}
- \pgfimage[width=0.8\textwidth]{platforms-comp.png}
- \end{center}
-\end{frame}
-
-%%%%%%
-%
-%
-%
-\section{Projekt: VERTEBRA}
-\begin{frame}
-\frametitle{VERTEBRA: Funktionalität}
-\begin{itemize}
- \item VERTEBRA = \textbf{V}olumetric \textbf{E}xaminer for \textbf{R}adiological/\textbf{T}omographical \textbf{E}xperimental \textbf{B}asic \textbf{R}ealtime \textbf{A}nalysis
- \item Ziel: Demonstration eines Klassifizierungsalgorithmus
- \item Berechnung auf der CPU / Rendering auf der GPU $\rightarrow$ Nur Standardhardware nötig
- \item DICOM-Import
- \item Hounsfield-Fenster
- \item Nur Demonstration - keine Produktivsoftware!
-\end{itemize}
-\end{frame}
-%
-%
-\section{Augmented Reality}
-\begin{frame}[allowframebreaks]
-\frametitle{Augmented Reality}
-\begin{columns}
-        \column{.45\textwidth}
-	    \begin{itemize}
-	    \item `Erweiterte Realität`
-	    \item Echtzeiteinblendung von Informationen, z.B. für Chirurgen
-	    \item Beispiel: Überlagerung des sichtbaren Bildes mit CT/MR-Informationen
-	    \end{itemize}
-        \column{.55\textwidth}
-	\pgfimage[width=\textwidth]{Stereodisplay.jpeg}
+\begin{columns}[c,onlytextwidth]
+ \column{.55\textwidth}
+ \begin{itemize}
+  \item Sortieren der Rotationen des Eingabestrings
+ \end{itemize}
+ \column{.45\textwidth}
+    \begin{tabular}{c|c}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & aabrac \\
+    1 & abraca \\
+    2 & acaabr \\
+    3 & bracaa \\
+    4 & caabra \\
+    5 & racaab \\
+    \end{tabular}
 \end{columns}
 \end{frame}
-
+%%% Output of compression algorithm
 \begin{frame}
-\frametitle{Displaytypen (Auszug)}
-\begin{itemize}
- \item Optical See-Through $\rightarrow$ Halbdurchlässig
- \item Video See-Through
- \item Head Up Displays (HUDs) (Monokular / Binokular
- \item (Auto)stereoskopische Displays
- \item Virtual Retinal Displays
-\end{itemize}
-\end{frame}
-%
-%
-\section{ARION\texttrademark - Ein existierendes Visualisationssystem}
-\begin{frame}
-\frametitle{ARION\texttrademark - Ein existierendes Visualisationssystem}
-\begin{itemize}
-\item Vorgestellt 2002 von Suthau et al.
-\item Benutzt CT- sowie Angiographische Daten
-\item Magnetisches Trackingsystem zum Ausgleich der Körperbewegungen und zur Ortung der chirurgischen Instrumente
-\item Augmented Reality: Autostereoskopisches Display
-\end{itemize}
-\end{frame}
-
-\begin{frame}
- \frametitle{Download der Arbeit sowie der Präsentationen auf:}
- \begin{center}
-   \textbf{\url{http://tinyurl.com/ulikoehler-seminararbeit}}
- \end{center}
-\end{frame}
-
-%
-%
-\section{Quellen}
-\begin{frame}[shrink]
- \frametitle{Bildquellen}
+\begin{columns}[c,onlytextwidth]
+ \column{.55\textwidth}
  \begin{itemize}
-  \item Hervorhebung von Tumoren:\\ \url{http://radiographics.rsna.org/content/27/3/687/F36.expansion}
-  \item Augmented Reality I :\\ \url{http://www.iwb.tum.de/AR_HMI_f\%C3\%BCr_Industrieroboter.print}
-  \item Weitere: Selbst erstellt / Public Domain
+  \item Resultat:\\
+      Das Tupel \textit{$(L,I)$}, wobei L die {\color{red}letzte Spalte} der Matrix ist
+      und I der Index des {\color{darkgreen}Eingabestrings in der Matrix} ist
+  \item $(L,I) = (caraab, 1)$
  \end{itemize}
- 
+ \column{.45\textwidth}
+    \begin{tabular}{c|cc}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & aabra{\color{red}c} \\
+    {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
+    2 & acaab{\color{red}r} \\
+    3 & braca{\color{red}a} \\
+    4 & caabr{\color{red}a} \\
+    5 & racaa{\color{red}b} \\
+    \end{tabular}
+\end{columns}
 \end{frame}
+%%%%%% Decompression
+\begin{frame}
 
+\begin{columns}[c,onlytextwidth]
+ \column{.55\textwidth}
+ \begin{itemize}
+  \item Resultat:\\
+      Das Tupel \textit{$(L,I)$}, wobei L die {\color{red}letzte Spalte} der Matrix ist
+      und I der Index des {\color{darkgreen}Eingabestrings in der Matrix} ist
+  \item $(L,I) = (caraab, 1)$
+ \end{itemize}
+ \column{.45\textwidth}
+    \begin{tabular}{c|cc}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & aabra{\color{red}c} \\
+    {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
+    2 & acaab{\color{red}r} \\
+    3 & braca{\color{red}a} \\
+    4 & caabr{\color{red}a} \\
+    5 & racaa{\color{red}b} \\
+    \end{tabular}
+\end{columns}
+\end{frame}
+%%%%%% Complexity
+\begin{frame}
+ \frametitle{Komplexität der BWT}
+ \begin{itemize}
+  \item Die Komplexität der BWT ist mindestens $\mathcal{O}(n^2)$
+  %TODO 
+ \end{itemize}
+\end{frame}
 \end{document}
