@@ -3,10 +3,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
 \usepackage{hyperref}
+\usepackage{color}
+\usepackage{textcomp}
 %\usepackage[svgnames]{xcolor}
 %\usetheme[secheader]{Boadilla}
 %\usefonttheme{sans}
 \setbeamersize{text margin left=1cm,text margin right=1cm}
+\setbeamertemplate{section in toc}[Palo Alto]
 
 \title{Die Burrows-Wheeler-Transformation}
 \subtitle{Proseminar \glqq Algorithmen der Bioinformatik\grqq}
@@ -14,7 +17,21 @@
 \date{12.~November 2012}
 
 %Colors
-\definecolor{darkgreen}{rgb}{136,100,62}
+\definecolor{darkgreen}{RGB}{0,110,29}
+
+\setbeamertemplate{footline}
+{%
+%\begin{beamercolorbox}[wd=0.5\textwidth,ht=3ex,dp=1.5ex,leftskip=.5em,rightskip=.5em]{author in head/foot}%
+%\usebeamerfont{author in head/foot}%
+%\insertframenumber\hfill\insertshortauthor%
+%\end{beamercolorbox}%
+\vspace*{-4.5ex}\hspace*{0.5\textwidth}%
+\begin{beamercolorbox}[width=\textwidth,ht=3ex,dp=1.5ex,left]{title in head/foot}%
+\usebeamerfont{title in head/foot}%
+Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
+%\insertshorttitle%
+\end{beamercolorbox}%
+}
 
 \AtBeginSection[]{} % for optional outline or other recurrent slide
 
@@ -25,15 +42,31 @@
 \tableofcontents
 \end{frame}
 
-\section{Kernkonzepte}
-\subsection{Burrows-Wheeler-Transformation}
+\section{Grundlagen der Datenkompression}
+\begin{frame}
+\frametitle{Große Datenmengen in der Bioinformatik}
+  
+\end{frame}
+%%%%%% Naive algorithm
+\begin{frame}[allowframebreaks]
+\frametitle{Ein naiver Kompressionsalgorithmus}
+\begin{itemize}
+ \item Eingabestring S: aaaaaaaaabbb \textrightarrow $|S| = 12$
+ \item Algorithmus fasst gleiche aufeinanderfolgende Zeichen zusammen
+ \item Ausgabe: $S' = $ 9*a,3*b \textrightarrow $|S'|$ = 7
+ \item Problem: Viele Strings (z.B. abcdefghi) können so nicht komprimiert werden
+\end{itemize}
+\end{frame}
+\section{Burrows-Wheeler-Transformation}
 %%%%%% 	
+\subsection{Algorithmus der Burrows-Wheeler-Transformation}
 \begin{frame}[allowframebreaks]
  \frametitle{BWT - Kompression}
     \begin{columns}[c,onlytextwidth]
     \column{0.55\textwidth}
     \begin{itemize}
-	\item Eingabestring: \textit{aabrac}
+	\item Eingabestring S: \textit{aabrac}
+	\item Initialisierung einer Matrix der Dimensionen $|S| \times |S|$
 	\item Bildung aller zyklischen Rotationen des Eingabestrings
     \end{itemize}
     \column{0.45\textwidth}
@@ -47,13 +80,12 @@
     5 & caabra \\
     \end{tabular}
     \end{columns}
-\end{frame}
+\framebreak
 %%%%%% Sorting
-\begin{frame}
 \begin{columns}[c,onlytextwidth]
  \column{.55\textwidth}
  \begin{itemize}
-  \item Sortieren der Rotationen des Eingabestrings
+  \item Lexikographische Sortierung der Rotationen des Eingabestrings
  \end{itemize}
  \column{.45\textwidth}
     \begin{tabular}{c|c}
@@ -66,9 +98,8 @@
     5 & racaab \\
     \end{tabular}
 \end{columns}
-\end{frame}
+\framebreak
 %%% Output of compression algorithm
-\begin{frame}
 \begin{columns}[c,onlytextwidth]
  \column{.55\textwidth}
  \begin{itemize}
@@ -78,7 +109,7 @@
   \item $(L,I) = (caraab, 1)$
  \end{itemize}
  \column{.45\textwidth}
-    \begin{tabular}{c|cc}
+    \begin{tabular}{c|c}
     \textbf{Row \#} & \textbf{Rotation} \\
     0 & aabra{\color{red}c} \\
     {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
@@ -90,34 +121,57 @@
 \end{columns}
 \end{frame}
 %%%%%% Decompression
+\subsection{Inverse BWT}
 \begin{frame}
-
+\frametitle{Inverse Burrows-Wheeler-Transformation}
 \begin{columns}[c,onlytextwidth]
- \column{.55\textwidth}
+ \column{.65\textwidth}
  \begin{itemize}
-  \item Resultat:\\
-      Das Tupel \textit{$(L,I)$}, wobei L die {\color{red}letzte Spalte} der Matrix ist
-      und I der Index des {\color{darkgreen}Eingabestrings in der Matrix} ist
-  \item $(L,I) = (caraab, 1)$
+  \item Eingabetupel: $(L,I)$
+  \item Initialisierung einer Matrix der Dimensionen $|L| \times |L|$
+  \item F $:=$ Sortierung der Zeichen von L $=$ ``aaabcr''
+  \item Füllen der ersten Spalte der Matrix mit {\color{darkgreen}F}
  \end{itemize}
- \column{.45\textwidth}
-    \begin{tabular}{c|cc}
+ \column{.35\textwidth}
+    \begin{tabular}{c|c}
     \textbf{Row \#} & \textbf{Rotation} \\
-    0 & aabra{\color{red}c} \\
-    {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
-    2 & acaab{\color{red}r} \\
-    3 & braca{\color{red}a} \\
-    4 & caabr{\color{red}a} \\
-    5 & racaa{\color{red}b} \\
+    0 & {\color{darkgreen}a} \\
+    1 & {\color{darkgreen}a} \\
+    2 & {\color{darkgreen}a} \\
+    3 & {\color{darkgreen}b} \\
+    4 & {\color{darkgreen}c} \\
+    5 & {\color{darkgreen}r} \\
     \end{tabular}
 \end{columns}
+\framebreak
+\begin{columns}[c,onlytextwidth]
+ \column{.65\textwidth}
+\end{columns}
+\end{frame}
+%%%%%% Problems and solutions
+\subsection{Probleme der BWT}
+\begin{frame}[allowframebreaks]
+ \frametitle{Probleme der BWT}
+ \begin{itemize}
+  \item Komplexität der BWT ist $\mathcal{O}(n^2)$\\
+    \textrightarrow \ Anwendung der BWT auf sehr große Datensätze (z.B. Genome) skaliert nicht
+    \pause
+  \item Lösung: Unterteilung des Datensatzes in kleinere \textit{Blöcke} - Anwendung der BWT auf diese Blöcke
+ \end{itemize}
+ 
+\framebreak
+ \begin{itemize}
+  \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als Länge des Eingabestrings $|S|$
+  \pause
+  \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{LZMA2} auf $(L,I)$
+  \end{itemize}
 \end{frame}
 %%%%%% Complexity
 \begin{frame}
  \frametitle{Komplexität der BWT}
  \begin{itemize}
   \item Die Komplexität der BWT ist mindestens $\mathcal{O}(n^2)$
-  %TODO 
+  % TODO 
  \end{itemize}
 \end{frame}
 \end{document}
