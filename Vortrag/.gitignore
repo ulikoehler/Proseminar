@@ -1,6 +1,6 @@
 pres.aux
 pres.nav
-pres.log
+*.log
 pres.out
 pres.pdf
 pres.snm

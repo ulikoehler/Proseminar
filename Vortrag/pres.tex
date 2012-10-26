@@ -43,20 +43,40 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \end{frame}
 
 \section{Grundlagen der Datenkompression}
-\begin{frame}
+\begin{frame}[allowframebreaks]
 \frametitle{Große Datenmengen in der Bioinformatik}
-  
+  \begin{itemize}
+   \item High-Throughput-Sequencing erzeugt durch \textit{n}-fache Abdeckung große Datenmengen
+   \item Nur 4 Basen  sowie je nach Datensatz weitere \textit{k} Pseudobasen wie z.B \textit{X = nicht definiert}\\
+   \textrightarrow\ Bei einer Speicherung als Text werden\\\quad\ nur $\frac{4+k}{256}$ jedes Bytes benutzt\\
+   \textrightarrow\ Informationsgehalt einer DNA-Sequenz pro\\\quad\ Byte ist vergleichsweise gering
+  \end{itemize}
+\framebreak
+\begin{itemize}
+ \item Repeats (z.B. Satelliten) enthalten noch weniger Information pro Byte als eine zufällige DNA-Sequenz
+ \item Idee der verlustfreien Kompression: Möglichst viel Information pro Byte durch Eliminierung von Redundanzen darstellen
+ \item Anforderung: Ursprungstext muss sich ohne Veränderung wiederherstellen lassen
+\end{itemize}
+
 \end{frame}
 %%%%%% Naive algorithm
-\begin{frame}[allowframebreaks]
+\begin{frame}
 \frametitle{Ein naiver Kompressionsalgorithmus}
 \begin{itemize}
- \item Eingabestring S: aaaaaaaaabbb \textrightarrow $|S| = 12$
+ \item Eingabestring $S := AAAAAAAAATTT$ \textrightarrow $|S| = 12$
  \item Algorithmus fasst gleiche aufeinanderfolgende Zeichen zusammen
- \item Ausgabe: $S' = $ 9*a,3*b \textrightarrow $|S'|$ = 7
- \item Problem: Viele Strings (z.B. abcdefghi) können so nicht komprimiert werden
+ \item Resultat: $S' = $ 9*A,3*T \textrightarrow $|S'|$ = 7
+ \item Problem: Viele Strings (z.B. der STR ATATATAT) können nicht komprimiert werden
+\end{itemize}
+\framebreak
+\begin{itemize}
+ \item Beobachtung: Aufeinanderfolgende gleiche Zeichen können von diesem Algorithmus besser komprimiert werden
+ \item Viele reale Kompressionsalgorithmen können davon ebenfalls profitieren\vspace{3mm}
+ \item Ist es möglich, einen String reversibel so umzuordnen, dass möglichst viele gleiche Zeichen aufeinanderfolgen?\\
+ \textrightarrow\ Burrows-Wheeler-Transformation
 \end{itemize}
 \end{frame}
+
 \section{Burrows-Wheeler-Transformation}
 %%%%%% 	
 \subsection{Algorithmus der Burrows-Wheeler-Transformation}
