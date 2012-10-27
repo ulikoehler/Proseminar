@@ -60,7 +60,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 
 \end{frame}
 %%%%%% Naive algorithm
-\begin{frame}
+\begin{frame}[allowframebreaks]
 \frametitle{Ein naiver Kompressionsalgorithmus}
 \begin{itemize}
  \item Eingabestring $S := AAAAAAAAATTT$ \textrightarrow $|S| = 12$
@@ -86,7 +86,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     \column{0.55\textwidth}
     \begin{itemize}
 	\item Eingabestring S: \textit{aabrac}
-	\item Initialisierung einer Matrix der Dimensionen $|S| \times |S|$
+	\item Initialisierung einer Matrix M der Dimensionen $|S| \times |S|$
 	\item Bildung aller zyklischen Rotationen des Eingabestrings
     \end{itemize}
     \column{0.45\textwidth}
@@ -143,29 +143,62 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 %%%%%% Decompression
 \subsection{Inverse BWT}
 \begin{frame}[allowframebreaks]
-\frametitle{Inverse Burrows-Wheeler-Transformation}
+\frametitle{Idee der Rücktransformation}
 \begin{columns}[c,onlytextwidth]
  \column{.65\textwidth}
  \begin{itemize}
   \item Eingabetupel: $(L,I)$
-  \item Initialisierung einer Matrix der Dimensionen $|L| \times |L|$
-  \item F $:=$ Sortierung der Zeichen von L $=$ ``aaabcr''
-  \item Füllen der ersten Spalte der Matrix mit {\color{darkgreen}F}
+  \item Initialisierung einer Matrix M der Dimensionen $|L| \times |L|$
+  \item Bereits bekannt: L ist die {\color{darkgreen}letzte Spalte} von M
  \end{itemize}
  \column{.35\textwidth}
     \begin{tabular}{c|c}
     \textbf{Row \#} & \textbf{Rotation} \\
-    0 & {\color{darkgreen}a} \\
-    1 & {\color{darkgreen}a} \\
-    2 & {\color{darkgreen}a} \\
-    3 & {\color{darkgreen}b} \\
-    4 & {\color{darkgreen}c} \\
-    5 & {\color{darkgreen}r} \\
+    0 & \_\_\_\_\_{\color{darkgreen}c} \\
+    1 & \_\_\_\_\_{\color{darkgreen}a} \\
+    2 & \_\_\_\_\_{\color{darkgreen}r} \\
+    3 & \_\_\_\_\_{\color{darkgreen}a} \\
+    4 & \_\_\_\_\_{\color{darkgreen}a} \\
+    5 & \_\_\_\_\_{\color{darkgreen}b} \\
     \end{tabular}
 \end{columns}
 \framebreak
 \begin{columns}[c,onlytextwidth]
  \column{.65\textwidth}
+ \begin{itemize}
+  \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
+  \textrightarrow\ Kann durch sortieren von L ausgefüllt werden
+ \end{itemize}
+
+ \column{.35\textwidth}
+    \begin{tabular}{c|l}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & {\color{darkgreen}a}\_\_\_\_c\\
+    1 & {\color{darkgreen}a}\_\_\_\_a\\
+    2 & {\color{darkgreen}a}\_\_\_\_r\\
+    3 & {\color{darkgreen}b}\_\_\_\_a\\
+    4 & {\color{darkgreen}c}\_\_\_\_a\\
+    5 & {\color{darkgreen}r}\_\_\_\_b\\
+    \end{tabular}
+\end{columns}
+\framebreak
+\begin{columns}[c,onlytextwidth]
+ \column{.65\textwidth}
+ \begin{itemize}
+  \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
+  \textrightarrow\ Kann durch sortieren von L ausgefüllt werden
+ \end{itemize}
+
+ \column{.35\textwidth}
+    \begin{tabular}{c|l}
+    \textbf{Row \#} & \textbf{Rotation} \\
+    0 & {\color{darkgreen}a}\_\_\_\_c\\
+    1 & {\color{darkgreen}a}\_\_\_\_a\\
+    2 & {\color{darkgreen}a}\_\_\_\_r\\
+    3 & {\color{darkgreen}b}\_\_\_\_a\\
+    4 & {\color{darkgreen}c}\_\_\_\_a\\
+    5 & {\color{darkgreen}r}\_\_\_\_b\\
+    \end{tabular}
 \end{columns}
 \end{frame}
 %%%%%% Problems and solutions
@@ -183,7 +216,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \begin{itemize}
   \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als Länge des Eingabestrings $|S|$
   \pause
-  \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{LZMA2} auf $(L,I)$
+  \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{Deflate} auf $(L,I)$
   \end{itemize}
 \end{frame}
 %%%%%% Complexity
