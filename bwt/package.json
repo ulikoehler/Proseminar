@@ -1,0 +1,7 @@
+{
+  "name"           : "BWT",
+  "dependencies"   : {
+                     },
+  "main"           : "./app",
+  "version"        : "0.0.1"
+}
