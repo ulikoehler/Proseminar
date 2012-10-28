@@ -8,6 +8,7 @@
 \usepackage{alltt}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{booktabs}
 \usepackage{inconsolata} % TT font
 \usepackage{array}
 %\usepackage[svgnames]{xcolor}
@@ -414,22 +415,34 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{Deflate} auf $(L,I)$
   \end{itemize}
 \end{frame}
-%%%%%% 
-\subsection{Vergleich mit anderen Algorithmen}
+%%%%%% Comp
 \begin{frame}
- \begin{center}
-  \large Vergleich mit anderen Algorithmen
- \end{center}
-\end{frame}
-
-\begin{frame}
- \frametitle{Wichtige Parameter für Kompressionsalgorithmen}
-
+ \frametitle{Vergleich mit anderen Algorithmen}
+ \begin{columns}[c,onlytextwidth]
+  \column{1\textwidth}
+    \begin{itemize}
+    \item Kompression ist meist ein Kompromiss zwischen Geschwindigkeit und Platzeinsparung
+    \item Einige Algorithmen sind für spezielle Datentypen (z.B. Bilder) besser geeignet
+    \item Einige Algorithmen (z.B. \textit{bzip2}) benutzen bereits die BWT\\
+    \textrightarrow\ Kein Vergleich möglich
+    \end{itemize}
+  %\column{0.5\textwidth}
+  %\begin{tabular}{c}
+  %\textbf{Hohe Kompression}\\
+  %\textuparrow \textbf{langsam}\\\hline
+  %PAQ8\\
+  %LZMA/LZMA2\\
+  %bzip2\\
+  %Deflate\\\hline
+  %\textbf{Geringe Kompression}\\
+  %\textuparrow \textbf{schnell}
+  %\end{tabular}  
+ \end{columns}
 \end{frame}
 
 \begin{frame}
  \frametitle{Resultate von Burrows und Wheeler}
- 
+ \includegraphics[width=\textwidth]{graph/bw-1.pdf}
 \end{frame}
 
 %%%%%% Results
