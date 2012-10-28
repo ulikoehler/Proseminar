@@ -36,8 +36,6 @@ function bwtOnFile(blocksize, infile, outfile) {
 						lastPrinted += 1;
 						console.dir("Processed " + lastPrinted + " percent of " + infile);
 					}
-					//console.dir("Read " + bytesRead + " bytes");
-					//console.dir("Read " + buf.toString());
 					//Calculate the BWT
 					var bwtBuf = bwt.bwtFromBuf(buf);
 					var written = fs.writeSync(targetFD, bwtBuf, 0, bwtBuf.length, null);

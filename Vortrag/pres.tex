@@ -374,18 +374,20 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 
 %%%%%% Problems and solutions
 \subsection{Probleme der BWT}
-\begin{frame}[allowframebreaks]
- \frametitle{Probleme der BWT}
+\begin{frame}
+ \frametitle{Skalierbarkeit}
  \begin{itemize}
   \item Komplexität der BWT ist $\mathcal{O}(n^2)$\\
     \textrightarrow \ Anwendung der BWT auf sehr große Datensätze (z.B. Genome) skaliert nicht
     \pause
   \item Lösung: Unterteilung des Datensatzes in kleinere \textit{Blöcke} - Anwendung der BWT auf diese Blöcke
  \end{itemize}
-\framebreak
+\end{frame}
+\begin{frame}
+ \frametitle{Overhead}
  \begin{itemize}
-  \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als Länge des Eingabestrings $|S|$
-  \pause
+  \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als $|S|$
+  \item Genauer Längenunterschied hängt von der Repräsentation von $(L,I)$ ab
   \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{Deflate} auf $(L,I)$
   \end{itemize}
 \end{frame}
