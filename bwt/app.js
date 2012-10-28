@@ -1,8 +1,6 @@
 var bwt = require("./bwt.js");
 var fs = require("fs")
-var fiber = require('fibers');
-
-
+s
 var infileName = process.argv[2];
 var outfileName = process.argv[3];
 var blockSize = parseInt(process.argv[4]);
@@ -12,35 +10,51 @@ console.dir("Using blocksize " + blockSize);
 bwtOnFile(blockSize, infileName, outfileName);
 
 function getFilesizeInBytes(filename) {
- var stats = fs.statSync(filename)
- var fileSizeInBytes = stats["size"]
- return fileSizeInBytes
+	 var stats = fs.statSync(filename)
+	 var fileSizeInBytes = stats["size"]
+	 return fileSizeInBytes
 }
  
-function bwtOnFile(blocksize, infile, outfile) { 
+function bwtOnFile(blocksize, infile, outfile) {
+	var finished = false;
 	var alreadyProcessed = 0;
-	var filesize = getFilesizeInBytes();
+	var filesize = getFilesizeInBytes(infile);
+	var lastPrinted = 0; //The last printed progress percentage
 	//Open the file to write to
-	var targetFD = fs.openSync(outfile, 'w');
-	//Open a fd
-	fs.open(infile, 'r', 0666, function(err, fd) {
-		if(err) {console.dir(err);}
-		//Read blocksize bytes
-		while(1) {
-			var buf = new Buffer(blocksize);
-			var bytesRead = fs.readSync(fd, buf, 0, blocksize, null); //Read blocksize bytes
-			//Calculate the BWT
-			var bwtBuf = bwt.bwtFromBuf(buf);
-			fs.write(targetFD, buf, 0, buf.length, null, function(err, written, buffer) {
+	fs.open(outfile, 'w', 0666, function(err, targetFD) {
+		//Open a fd
+		fs.open(infile, 'r', 0666, function(err, fd) {
 				if(err) {console.dir(err);}
-				alreadyProcessed += blocksize;
-				if(written != buf.length) {
-					console.dir("Written only " + written + " of  " + buf.length + " bytes");
+				//Read blocksize bytes
+				while(1) {
+					//Read the next blocksize bytes
+					var buf = new Buffer(blocksize);
+					var bytesRead = fs.readSync(fd, buf, 0, blocksize, null); //Read blocksize bytes
+					//Calculate how much we processed so far
+					var processedPercentage = 100*alreadyProcessed / filesize;
+					if(processedPercentage >= lastPrinted+1) {
+						lastPrinted += 1;
+						console.dir("Processed " + lastPrinted + " percent of " + infile);
+					}
+					//console.dir("Read " + bytesRead + " bytes");
+					//console.dir("Read " + buf.toString());
+					//Calculate the BWT
+					var bwtBuf = bwt.bwtFromBuf(buf);
+					var written = fs.writeSync(targetFD, buf, 0, buf.length, null);
+					if(written != buf.length) {
+						console.dir("Written only " + written + " of  " + buf.length + " bytes");
+					}
+					alreadyProcessed += bytesRead;
+					//Break if the number of bytes read does not equal the expected bytecount (EOF)
+					if(bytesRead != blocksize) {//Read blocksize bytes
+						console.dir("Stopping...");
+						break;
+					}
 				}
+				fs.closeSync(fd);
+				fs.closeSync(targetFD);
+				console.dir("Finished");
+				finished = true;
 		});
-	}
-	fs.closeSync(fd);
-	console.dir("Finished");
 	});
-	fs.closeSync(targetFD);
 }

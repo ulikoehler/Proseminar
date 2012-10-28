@@ -61,22 +61,27 @@ function bwt(s) {
 	return [L,i];
 }
 
+var pad = require('pad');
+
 function bufferFromBWT(bwtarray) {
+	if(bwtarray[0].length == 0) {
+		return new Buffer(0);
+	}
 	//Check how long a buffer containing L is
 	var LBuf = new Buffer(bwtarray[0]); //utf8
 	var LBufLen = LBuf.length;
 	//Allocate a new buffer with L's binary length + 4 bytes for a 32 bit rep of i
-	var buf = new Buffer(LBufLen + 4);
-	LBuf.copy(buf);
-	//Write the uint32 as network byte order (big endian)
-	buf.writeUInt32BE(bwtarray[1],  LBufLen);
+	var buf = new Buffer(LBufLen + 8);
+	LBuf.copy(buf); //copy L
+	//Write a 8-digit right padded number
+	buf.write(pad(8, bwtarray[1] + ""),  LBufLen);
 	return buf;
 }
 
 //Extracts the array [L,i] from the given bwt buffer
 function extractBWTFromBuf(buf) {
-	var i = buf.readUInt32BE(buf.length - 4);
-	var L = buf.toString("utf8", 0, buf.length-4);
+	var i = parseInt(buf.toString("utf8", buf.length - 8, buf.length));
+	var L = buf.toString("utf8", 0, buf.length-8);
 	return [L,i];
 }
 
