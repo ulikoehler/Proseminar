@@ -16,10 +16,11 @@ function getFilesizeInBytes(filename) {
 }
  
 function bwtOnFile(blocksize, infile, outfile) {
-	var finished = false;
 	var alreadyProcessed = 0;
 	var filesize = getFilesizeInBytes(infile);
 	var lastPrinted = 0; //The last printed progress percentage
+	var curBlockNum = 0;
+
 	//Open the file to write to
 	fs.open(outfile, 'w', 0666, function(err, targetFD) {
 		//Open a fd
@@ -37,7 +38,8 @@ function bwtOnFile(blocksize, infile, outfile) {
 						console.dir("Processed " + lastPrinted + " percent of " + infile);
 					}
 					//Calculate the BWT
-					var bwtBuf = bwt.bwtFromBuf(buf);
+					var bwtTuple = bwt.bwt(buf.toString());
+					var L = bwtTuple[0];
 					var written = fs.writeSync(targetFD, bwtBuf, 0, bwtBuf.length, null);
 					if(written != bwtBuf.length) {
 						console.dir("Written only " + written + " of  " + bwtBuf.length + " bytes");
@@ -48,11 +50,11 @@ function bwtOnFile(blocksize, infile, outfile) {
 						console.dir("Stopping...");
 						break;
 					}
+					curBlockNum++;
 				}
 				fs.closeSync(fd);
 				fs.closeSync(targetFD);
 				console.dir("Finished");
-				finished = true;
 		});
 	});
 }
