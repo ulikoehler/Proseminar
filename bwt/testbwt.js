@@ -43,6 +43,26 @@ exports.testAllLeftRotationsSort = function(test){
 };
 
 exports.testGetLastColumn = function(test){
-    test.deepEqual("bac", bwt.getLastColumn(["acb","cba","bac"]));
+    test.equals("bac", bwt.getLastColumn(["acb","cba","bac"]));
     test.done();
+};
+
+exports.testFindStringInArray = function(test) {
+    test.equals(2, bwt.findStringInArray("bac",["acb","cba","bac"]));
+    test.equals(-1, bwt.findStringInArray("cab",["acb","cba","bac"]));
+    test.done();
+};
+
+exports.testBWT = function(test) {
+    test.deepEqual(["bca",2], bwt.bwt("cba"));
+    test.done();
+};
+
+//Test whether the BWT buffer codec has been implemented correctly
+exports.testBWTBuffer = function(test) {
+	var bwtres = bwt.bwt("cba");
+	var buf = bwt.bufferFromBWT(bwtres);
+	//Test if decoding the buf yields the original result
+	test.deepEqual(bwtres, bwt.extractBWTFromBuf(buf));
+	test.done();
 };
