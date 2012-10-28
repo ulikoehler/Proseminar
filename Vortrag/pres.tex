@@ -1,15 +1,22 @@
-\documentclass[14pt,xcolor=dvipsnames]{beamer}
+\documentclass[14pt,xcolor=dvipsnames,pdftex]{beamer}
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
 \usepackage{hyperref}
 \usepackage{color}
 \usepackage{textcomp}
+\usepackage{alltt}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{inconsolata} % TT font
+\usepackage{array}
 %\usepackage[svgnames]{xcolor}
 %\usetheme[secheader]{Boadilla}
 %\usefonttheme{sans}
 \setbeamersize{text margin left=1cm,text margin right=1cm}
 \setbeamertemplate{section in toc}[Palo Alto]
+
+\newcolumntype{T}{c<{\ttfamily}}
 
 \title{Die Burrows-Wheeler-Transformation}
 \subtitle{Proseminar \glqq Algorithmen der Bioinformatik\grqq}
@@ -141,9 +148,9 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \end{columns}
 \end{frame}
 %%%%%% Decompression
-\subsection{Inverse BWT}
+\subsection{BWT -- Rücktransformation}
 \begin{frame}[allowframebreaks]
-\frametitle{Idee der Rücktransformation}
+\frametitle{BWT -- Rücktransformation}
 \begin{columns}[c,onlytextwidth]
  \column{.65\textwidth}
  \begin{itemize}
@@ -186,7 +193,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \column{.65\textwidth}
  \begin{itemize}
   \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
-  \textrightarrow\ Kann durch sortieren von L ausgefüllt werden
+  \textrightarrow\ Kann durch sortieren von $L$ ausgefüllt werden
  \end{itemize}
 
  \column{.35\textwidth}
@@ -199,6 +206,143 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     4 & {\color{darkgreen}c}\_\_\_\_a\\
     5 & {\color{darkgreen}r}\_\_\_\_b\\
     \end{tabular}
+\end{columns}
+\framebreak
+\begin{columns}[c,onlytextwidth]
+ \column{.65\textwidth}
+ \begin{itemize}
+  \item Die entstandene Matrix wird um ein Zeichen rotiert
+ \end{itemize}
+ \column{.35\textwidth}
+ \begin{tabular}{T}
+    \_\_\_\_c{\color{darkgreen}a}\\
+    \_\_\_\_a{\color{darkgreen}a}\\
+    \_\_\_\_r{\color{darkgreen}a}\\
+    \_\_\_\_a{\color{darkgreen}b}\\
+    \_\_\_\_a{\color{darkgreen}c}\\
+    \_\_\_\_b{\color{darkgreen}r}
+  \end{tabular}
+\end{columns}
+\framebreak
+\begin{columns}[c,onlytextwidth]
+ \column{.65\textwidth}
+ \begin{itemize}
+  \item Die Matrix wird lexikographisch sortiert
+ \end{itemize}
+ \column{.35\textwidth}
+ \begin{tabular}{T}
+    \_\_\_\_aa\\
+    \_\_\_\_ab\\
+    \_\_\_\_ac\\
+    \_\_\_\_br\\
+    \_\_\_\_ca\\
+    \_\_\_\_ra
+  \end{tabular}
+\end{columns}
+\framebreak
+\begin{itemize}
+ \item Die Schritte
+ \begin{itemize}
+  \item Schreiben von L in die rechteste freie Spalte
+  \item Lexikographisches Sortieren
+ \end{itemize}
+ werden wiederholt bis die Matrix voll ist
+\end{itemize}
+%Demo frames
+\framebreak
+\begin{columns}
+ \column{0.2\textwidth}
+ \begin{tabular}{T}
+    \_\_\_{\color{red}c}aa\\
+    \_\_\_{\color{red}a}ab\\
+    \_\_\_{\color{red}r}ac\\
+    \_\_\_{\color{red}a}br\\
+    \_\_\_{\color{red}a}ca\\
+    \_\_\_{\color{red}b}ra
+  \end{tabular}
+ \column{0.1\textwidth}
+ $\xrightarrow{\text{Sortieren}}$
+ \column{0.4\textwidth}
+ \begin{tabular}{T}
+    \_\_\_aab\\
+    \_\_\_abr\\
+    \_\_\_aca\\
+    \_\_\_bra\\
+    \_\_\_caa\\
+    \_\_\_rac
+  \end{tabular}
+\end{columns}
+% Demo 2
+\framebreak
+\begin{columns}
+ \column{0.2\textwidth}
+ \begin{tabular}{T}
+    \_\_{\color{red}c}aab\\
+    \_\_{\color{red}a}abr\\
+    \_\_{\color{red}r}aca\\
+    \_\_{\color{red}a}bra\\
+    \_\_{\color{red}a}caa\\
+    \_\_{\color{red}b}rac
+  \end{tabular}
+ \column{0.1\textwidth}
+ $\xrightarrow{\text{Sortieren}}$
+ \column{0.4\textwidth}
+ \begin{tabular}{T}
+    \_\_aabr\\
+    \_\_abra\\
+    \_\_acaa\\
+    \_\_brac\\
+    \_\_caab\\
+    \_\_raca
+  \end{tabular}
+\end{columns}
+% Demo 3
+\framebreak
+\begin{columns}
+ \column{0.2\textwidth}
+ \begin{tabular}{T}
+    \_{\color{red}c}aabr\\
+    \_{\color{red}a}abra\\
+    \_{\color{red}r}acaa\\
+    \_{\color{red}a}brac\\
+    \_{\color{red}a}caab\\
+    \_{\color{red}b}raca
+  \end{tabular}
+ \column{0.1\textwidth}
+ $\xrightarrow{\text{Sortieren}}$
+ \column{0.4\textwidth}
+ \begin{tabular}{T}
+    \_aabra\\
+    \_abrac\\
+    \_acaab\\
+    \_braca\\
+    \_caabr\\
+    \_racaa
+  \end{tabular}
+\end{columns}
+% Demo 4
+\framebreak
+\begin{columns}
+ \column{0.2\textwidth}
+ \begin{tabular}{T}
+    {\color{red}c}aabra\\
+    {\color{red}a}abrac\\
+    {\color{red}r}acaab\\
+    {\color{red}a}braca\\
+    {\color{red}a}caabr\\
+    {\color{red}b}racaa
+  \end{tabular}
+ \column{0.1\textwidth}
+ $\xrightarrow{\text{Sortieren}}$
+ \column{0.4\textwidth}
+ \begin{tabular}{T}
+    aabrac\\
+    abraca\\
+    acaabr\\
+    bracaa\\
+    caabra\\
+    racaab
+  \end{tabular}
 \end{columns}
 \end{frame}
 %%%%%% Problems and solutions
