@@ -61,10 +61,33 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \framebreak
 \begin{itemize}
  \item Repeats (z.B. Satelliten) enthalten noch weniger Information pro Byte als eine zufällige DNA-Sequenz
- \item Idee der verlustfreien Kompression: Möglichst viel Information pro Byte durch Eliminierung von Redundanzen darstellen
- \item Anforderung: Ursprungstext muss sich ohne Veränderung wiederherstellen lassen
 \end{itemize}
-
+\framebreak
+\begin{itemize}
+ \item \textbf{Lösung:} Verlustfreie Datenkompression\\
+ \textrightarrow\ Daten unter Einsatz von weniger\\
+ \quad\ Speicherplatz darstellen
+ \item Anforderungen je nach Anwendung:
+ \begin{itemize}
+  \item Schnelle Kompression
+  \item Geringe Größe der komprimierten Daten
+  \item Schnelle Dekompression
+  \item Geringe asymptotische Komplexität der Kompression/Dekompression
+ \end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%% Compression
+\begin{frame}[allowframebreaks]
+ \frametitle{Kompression - Redundanzen}
+ \begin{itemize}
+  \item Ein Byte erlaubt die Darstellung von 256 verschiedenen Werten
+  \item Die meisten Daten haben aber wesentlich kleinere Alphabete:
+  \begin{itemize}
+   \item Englischer Text: 26 Buchstaben + wenige Sonderzeichen (z.B. \textit{. , ( )})
+   \item DNA: 4 Basen + Metainformationen
+   \item Proteine: 20 Nukleinsäuren + Metainformationen
+  \end{itemize}
+ \end{itemize}
 \end{frame}
 %%%%%% Naive algorithm
 \begin{frame}[allowframebreaks]
@@ -391,6 +414,26 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{Deflate} auf $(L,I)$
   \end{itemize}
 \end{frame}
+%%%%%% 
+\subsection{Vergleich mit anderen Algorithmen}
+\begin{frame}
+ \begin{center}
+  \large Vergleich mit anderen Algorithmen
+ \end{center}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Wichtige Parameter für Kompressionsalgorithmen}
+
+\end{frame}
+
+\begin{frame}
+ \frametitle{Resultate von Burrows und Wheeler}
+ 
+\end{frame}
+
+%%%%%% Results
+
 %%%%%% Complexity
 \begin{frame}
  \frametitle{Komplexität der BWT}
