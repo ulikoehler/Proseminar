@@ -80,6 +80,11 @@ function extractBWTFromBuf(buf) {
 	return [L,i];
 }
 
+//Calculates the BWT from a given buffer and encodes it as buffer
+function bwtFromBuf(buf) {
+	return bufferFromBWT(bwt(buf.toString()));
+}
+
 module.exports = {
 	lastChar: lastChar,
 	firstChar: firstChar,
@@ -92,5 +97,6 @@ module.exports = {
 	getLastColumn: getLastColumn,
 	bufferFromBWT: bufferFromBWT,
 	extractBWTFromBuf:extractBWTFromBuf,
-	bwt:bwt
+	bwt:bwt,
+	bwtFromBuf:bwtFromBuf
 }

@@ -1,6 +1,7 @@
 {
   "name"           : "BWT",
   "dependencies"   : {
+			"fibers":"*"
                      },
   "main"           : "./app",
   "version"        : "0.0.1"
