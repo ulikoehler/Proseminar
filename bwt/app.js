@@ -1,6 +1,6 @@
 var bwt = require("./bwt.js");
 var fs = require("fs")
-s
+
 var infileName = process.argv[2];
 var outfileName = process.argv[3];
 var blockSize = parseInt(process.argv[4]);
@@ -40,9 +40,9 @@ function bwtOnFile(blocksize, infile, outfile) {
 					//console.dir("Read " + buf.toString());
 					//Calculate the BWT
 					var bwtBuf = bwt.bwtFromBuf(buf);
-					var written = fs.writeSync(targetFD, buf, 0, buf.length, null);
-					if(written != buf.length) {
-						console.dir("Written only " + written + " of  " + buf.length + " bytes");
+					var written = fs.writeSync(targetFD, bwtBuf, 0, bwtBuf.length, null);
+					if(written != bwtBuf.length) {
+						console.dir("Written only " + written + " of  " + bwtBuf.length + " bytes");
 					}
 					alreadyProcessed += bytesRead;
 					//Break if the number of bytes read does not equal the expected bytecount (EOF)
