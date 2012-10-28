@@ -58,6 +58,12 @@ exports.testBWT = function(test) {
     test.done();
 };
 
+exports.testBWT = function(test) {
+    test.deepEqual(["caraab", 1], bwt.bwt("abraca"));
+    test.done();
+};
+
+
 //Test whether the BWT buffer codec has been implemented correctly
 exports.testBWTBuffer = function(test) {
 	var bwtres = bwt.bwt("cba");

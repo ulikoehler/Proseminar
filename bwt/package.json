@@ -2,7 +2,8 @@
   "name"           : "BWT",
   "dependencies"   : {
 			"fibers":"*",
-			"pad":"*"
+			"pad":"*",
+			"buffered-reader":"*"
                      },
   "main"           : "./app",
   "version"        : "0.0.1"
