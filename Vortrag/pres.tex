@@ -92,13 +92,13 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     \begin{columns}[c,onlytextwidth]
     \column{0.55\textwidth}
     \begin{itemize}
-	\item Eingabestring S: \textit{aabrac}
+	\item Eingabestring $S := \text{\texttt{aabrac}}$	
 	\item Initialisierung einer Matrix M der Dimensionen $|S| \times |S|$
 	\item Bildung aller zyklischen Rotationen des Eingabestrings
     \end{itemize}
     \column{0.45\textwidth}
-    \begin{tabular}{c|c}
-    \textbf{Row \#} & \textbf{Rotation} \\
+    \begin{center}
+    \begin{tabular}{T|T}
     0 & aabrac \\
     1 & abraca \\
     2 & bracaa \\
@@ -106,6 +106,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     4 & acaabr \\
     5 & caabra \\
     \end{tabular}
+    \end{center}
     \end{columns}
 \framebreak
 %%%%%% Sorting
@@ -136,7 +137,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item $(L,I) = (caraab, 1)$
  \end{itemize}
  \column{.45\textwidth}
-    \begin{tabular}{c|c}
+    \begin{tabular}{T|T}
     \textbf{Row \#} & \textbf{Rotation} \\
     0 & aabra{\color{red}c} \\
     {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
@@ -176,16 +177,14 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
   \textrightarrow\ Kann durch sortieren von L ausgefüllt werden
  \end{itemize}
-
  \column{.35\textwidth}
-    \begin{tabular}{c|l}
-    \textbf{Row \#} & \textbf{Rotation} \\
-    0 & {\color{darkgreen}a}\_\_\_\_c\\
-    1 & {\color{darkgreen}a}\_\_\_\_a\\
-    2 & {\color{darkgreen}a}\_\_\_\_r\\
-    3 & {\color{darkgreen}b}\_\_\_\_a\\
-    4 & {\color{darkgreen}c}\_\_\_\_a\\
-    5 & {\color{darkgreen}r}\_\_\_\_b\\
+    \begin{tabular}{T}
+    \ttfamily{\color{darkgreen}a}\_\_\_\_c\\
+    \ttfamily{\color{darkgreen}a}\_\_\_\_a\\
+    \ttfamily{\color{darkgreen}a}\_\_\_\_r\\
+    \ttfamily{\color{darkgreen}b}\_\_\_\_a\\
+    \ttfamily{\color{darkgreen}c}\_\_\_\_a\\
+    \ttfamily{\color{darkgreen}r}\_\_\_\_b\\
     \end{tabular}
 \end{columns}
 \framebreak
@@ -349,7 +348,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \column{0.6\textwidth}
 \begin{itemize}
  \item $M$ wurde vollständig rekonstruiert
- \item Zeile $I$ ist der Originaltext
+ \item Zeile $I$ ist der {\color{red}Originaltext}
 \end{itemize}
 \column{0.4\textwidth}
 \begin{tabular}{c|T}
@@ -361,8 +360,18 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     5 & racaab
 \end{tabular}
 \end{columns}
-
 \end{frame}
+%%%%%% Why it compresses well
+\begin{frame}
+ \frametitle{Komprimierbarkeit}
+ \begin{itemize}
+  \item Einige Zeichenkombinationen tauchen häufiger in Texten auf als andere, z.B. \textit{he} in \textit{the}
+  \item Alle Zeilen von $M$ die mit \textit{he} beginnen tauchen nacheinander auf (Sortierung)
+  \item Durch Rotation ist bei (fast) allen Zeilen die mit \textit{he} beginnen das letzte Zeichen \textit{t}
+  \textrightarrow\ $L$ enthält viele aufeinanderfolgende Ts
+ \end{itemize}
+\end{frame}
+
 %%%%%% Problems and solutions
 \subsection{Probleme der BWT}
 \begin{frame}[allowframebreaks]
@@ -373,7 +382,6 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     \pause
   \item Lösung: Unterteilung des Datensatzes in kleinere \textit{Blöcke} - Anwendung der BWT auf diese Blöcke
  \end{itemize}
- 
 \framebreak
  \begin{itemize}
   \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als Länge des Eingabestrings $|S|$
