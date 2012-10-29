@@ -452,13 +452,28 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \frametitle{Diskussion der Resultate von Burrows \& Wheeler}
  \begin{itemize}
   \item Zeitdaten sind kritisch zu bewerten - Hardware von 1994
-  \item Gute Kompression, aber dennoch gutes Verhältnis \textit{Kompression / Zeit}
-  \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze
+  \item Gute Kompression, aber dennoch akzeptables Verhältnis \textit{Kompression / Zeit}
+  \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze, sondern auf Kompressionstestkorpora
  \end{itemize}
-
 \end{frame}
-
-%%%%%% Results
-
-
+\begin{frame}
+ \frametitle{Resultate von Cox \& Bauer}
+ \begin{itemize}
+  \item Methode: Anwendung von 
+ \end{itemize}
+\end{frame}
+%%%%%% Conclusion
+\begin{frame}[allowframebreaks]
+ \frametitle{Zusammenfassung}
+ \begin{itemize}
+  \item Datenkompression ist aufgrund der enormen Datenmengen die u.A. bei High-Throughput-Sequencing entstehen, oftmals notwendig
+  \item Verschiedene Algorithmen erreichen verschiedene Kompressionsraten und benötigen unterschiedlich viel Rechenzeit
+ \end{itemize}
+ \framebreak
+ \begin{itemize}
+  \item Die Burrows-Wheeler-Transformation ist ein Algorithmus, um Strings kompressibler zu machen
+  \item \textit{bzip2} ist ein beliebtes Unix-Programm das oft zur Kompression verschiedenster Daten eingesetzt wird
+  \item Für Sequenzdatenbanken zeigen neuere Publikationen, dass BWT-basierte Verfahren sich oft deutlich besser verhalten als alternative Verfahren
+ \end{itemize}
+\end{frame}
 \end{document}
