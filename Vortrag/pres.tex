@@ -171,8 +171,9 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item $(L,I) = (caraab, 1)$
  \end{itemize}
  \column{.45\textwidth}
+ \begin{center}
     \begin{tabular}{T|T}
-    \textbf{Row \#} & \textbf{Rotation} \\
+    \multicolumn{2}{c}{\textbf{M}}\\
     0 & aabra{\color{red}c} \\
     {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
     2 & acaab{\color{red}r} \\
@@ -180,6 +181,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     4 & caabr{\color{red}a} \\
     5 & racaa{\color{red}b} \\
     \end{tabular}
+    \end{center}
 \end{columns}
 \end{frame}
 %%%%%% Decompression
@@ -213,6 +215,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \end{itemize}
  \column{.35\textwidth}
     \begin{tabular}{T}
+    \textbf{M}\\
     \ttfamily{\color{darkgreen}a}\_\_\_\_c\\
     \ttfamily{\color{darkgreen}a}\_\_\_\_a\\
     \ttfamily{\color{darkgreen}a}\_\_\_\_r\\
@@ -248,6 +251,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \end{itemize}
  \column{.35\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_\_\_c{\color{darkgreen}a}\\
     \_\_\_\_a{\color{darkgreen}a}\\
     \_\_\_\_r{\color{darkgreen}a}\\
@@ -264,6 +268,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \end{itemize}
  \column{.35\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_\_\_aa\\
     \_\_\_\_ab\\
     \_\_\_\_ac\\
@@ -286,6 +291,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{columns}
  \column{0.2\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_\_{\color{red}c}aa\\
     \_\_\_{\color{red}a}ab\\
     \_\_\_{\color{red}r}ac\\
@@ -297,6 +303,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  $\xrightarrow{\text{Sortieren}}$
  \column{0.4\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_\_aab\\
     \_\_\_abr\\
     \_\_\_aca\\
@@ -310,6 +317,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{columns}
  \column{0.2\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_{\color{red}c}aab\\
     \_\_{\color{red}a}abr\\
     \_\_{\color{red}r}aca\\
@@ -321,6 +329,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  $\xrightarrow{\text{Sortieren}}$
  \column{0.4\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_\_aabr\\
     \_\_abra\\
     \_\_acaa\\
@@ -334,6 +343,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{columns}
  \column{0.2\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_{\color{red}c}aabr\\
     \_{\color{red}a}abra\\
     \_{\color{red}r}acaa\\
@@ -345,6 +355,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  $\xrightarrow{\text{Sortieren}}$
  \column{0.4\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     \_aabra\\
     \_abrac\\
     \_acaab\\
@@ -358,6 +369,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{columns}
  \column{0.2\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     {\color{red}c}aabra\\
     {\color{red}a}abrac\\
     {\color{red}r}acaab\\
@@ -369,6 +381,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  $\xrightarrow{\text{Sortieren}}$
  \column{0.4\textwidth}
  \begin{tabular}{T}
+    \textbf{M} \\
     aabrac\\
     abraca\\
     acaabr\\
@@ -386,6 +399,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \end{itemize}
 \column{0.4\textwidth}
 \begin{tabular}{c|T}
+    \multicolumn{2}{c}{\textbf{M}} \\
     0 & aabrac \\
     {\color{red}1} & {\color{red}abraca}\\
     2 & acaabr \\
@@ -505,16 +519,16 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \frametitle{Diskussion der eigenen Resultate}
  \begin{itemize}
   \item Die Ausgangsdateigrößen vor- und nach der BWT sind identisch
-  \item \textbf{Konklusion:} Um die BWT mit klassischen Kompressionsalgorithmen nutzen zu können ist eine andere Codierung, z.B. \textit{Move-To-Front-Coding} unbedingt erforderlich
+  \item \textbf{Konklusion:} Um die BWT mit klassischen Kompressionsalgorithmen nutzen zu können ist eine andere Codierung, z.B. die \textit{Move-To-Front-Codierung} erforderlich
+  \item Die Resultate von Burrows und Wheeler zeigen, dass sowohl die Move-To-Front-Codierung als auch die Huffman-Kodierung effektiv sind
  \end{itemize}
-
 \end{frame}
 
 %%%%%% Conclusion
 \begin{frame}[allowframebreaks]
  \frametitle{Zusammenfassung}
  \begin{itemize}
-  \item Datenkompression ist aufgrund der enormen Datenmengen die u.A. bei High-Throughput-Sequencing entstehen, oftmals notwendig
+  \item Datenkompression ist aufgrund der enormen Datenmengen die durch Methoden wie High-Throughput-kSequencing entstehen, oftmals notwendig
   \item Verschiedene Algorithmen erreichen verschiedene Kompressionsraten und benötigen unterschiedlich viel Rechenzeit
  \end{itemize}
  \framebreak
