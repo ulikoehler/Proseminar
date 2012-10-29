@@ -9,9 +9,12 @@ Index Algorithm Pre Ratio
   6 bzip2 Keine 27.9745582
   7 bzip2 BWT(500) 29.7050468
   8 bzip2 BWT(10k) 29.1685794
-  9 paq8o6 Keine 603.2
-  10 paq8o6 BWT(500) 614.1
-  11 paq8o6 BWT(10k) 614.1
+  9 xz Keine 26.0320404
+  10 xz BWT(500) 28.6216848
+  11 xz BWT(10k) 28.1650787
+  12 "xz -e9" Keine 25.9844138
+  13 "xz -e9" BWT(500) 28.609707
+  14 "xz -e9" BWT(10k) 28.1459882
 '))
 close(con)
 
