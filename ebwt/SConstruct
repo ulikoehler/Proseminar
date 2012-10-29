@@ -4,7 +4,7 @@ staticlink = ['-Wl,-Bstatic']
 allmodescflags = ['-std=c++0x',
                     '-ffunction-sections',
                     '-fdata-sections',
-                    '-march=native',
+                    '-march=corei7',
                     '-fvisibility-inlines-hidden',
                     '-pthread',
                     '-pipe']
@@ -16,7 +16,7 @@ profilecflags = ['-O2',
                     '-pg',
                     '-DPROFILE'] + allmodescflags
 
-alllibs = ['tcmalloc']
+alllibs = []
 
 env = Environment()
 compilemode = ARGUMENTS.get('mode', 'release')

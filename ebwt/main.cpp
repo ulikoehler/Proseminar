@@ -115,15 +115,18 @@ struct BWTTransformer {
     char* L;
     unsigned int datasize;
     unsigned int I;
+    Sort* sortArray;
 
     BWTTransformer(unsigned int datasize) : datasize(datasize) {
         m = new char[2 * datasize];
         L = new char[datasize];
+        sortArray = new Sort[datasize];
     }
 
     ~BWTTransformer() {
         delete[] m;
         delete[] L;
+        delete[] sortArray;
     }
 
     //Resize this transformer. Deletes previous data
@@ -132,10 +135,12 @@ struct BWTTransformer {
         //Delete old data
         delete[] m;
         delete[] L;
+        delete[] sortArray;
         //Initialize new data
         this->datasize = newSize;
         m = new char[2 * newSize];
         L = new char[2 * newSize];
+        sortArray = new Sort[newSize];
     }
 
     void bwt(const char* s) {
@@ -144,7 +149,6 @@ struct BWTTransformer {
         memcpy(m, s, datasize);
         memcpy(m + datasize, s, datasize);
         //Build the sortable permutation wrappers
-        Sort* sortArray = new Sort[datasize];
         for (int i = 0; i < datasize; i++) {
             sortArray[i].index = i;
             sortArray[i].m = m;
@@ -179,6 +183,7 @@ void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) 
             transformer.bwt(buf);
             //Write it
             fwrite(transformer.L, 1, read, outFD);
+            break;
         }
         //Do the BWT
         transformer.bwt(buf);
@@ -213,8 +218,8 @@ int main(int argc, char** argv) {
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
         autoBWT(infile, minBlocksize);
         return 0;
-    }
-    //Multiple block sizes
+    } 
+   //Multiple block sizes
     int maxBlocksize = atoi(argv[3]);
     int blocksizeStep = atoi(argv[4]);
     //Execute the BWT
