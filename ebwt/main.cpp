@@ -111,40 +111,49 @@ void siftDown(T numbers[], int root, int bottom) {
     siftDown(numbers, maxChild, bottom);
 }
 
-void bwt(const char* s, unsigned int datasize) {
-    //Double the string to allow in-place rotation building
-    // (don't double the NUL terminator)
-    char* m = new char[2 * datasize];
-    memcpy(m, s, datasize);
-    memcpy(m + datasize, s, datasize);
-    //Build the sortable permutation wrappers
-    Sort* sortArray = new Sort[datasize];
-    for (int i = 0; i < datasize; i++) {
-        sortArray[i].index = i;
-        sortArray[i].m = m;
-        sortArray[i].slen = datasize;
+struct BWTTransformer {
+    char* m;
+    char* L;
+    unsigned int datasize;
+    unsigned int I;
+
+    BWTTransformer(unsigned int datasize) : datasize(datasize) {
+        m = new char[2 * datasize];
+        L = new char[datasize];
     }
-    //Sort the Array
-    heapSort(sortArray, datasize);
-    //Copy the last column to L and find I in the process
-    char* L = new char[datasize];
-    unsigned int I = 0;
-    for (int i = 0; i < datasize; i++) {
-        L[i] = (*sortArray[i])[datasize - 1];
-        if (sortArray[i] == s) {
-            I = i;
+
+    void bwt(const char* s) {
+        //Double the string to allow in-place rotation building
+        // (don't double the NUL terminator)
+        memcpy(m, s, datasize);
+        memcpy(m + datasize, s, datasize);
+        //Build the sortable permutation wrappers
+        Sort* sortArray = new Sort[datasize];
+        for (int i = 0; i < datasize; i++) {
+            sortArray[i].index = i;
+            sortArray[i].m = m;
+            sortArray[i].slen = datasize;
+        }
+        //Sort the Array
+        heapSort(sortArray, datasize);
+        //Copy the last column to L and find I in the process
+        for (int i = 0; i < datasize; i++) {
+            L[i] = (*sortArray[i])[datasize - 1];
+            if (sortArray[i] == s) {
+                I = i;
+            }
         }
     }
-    //Find I
-    cout << "(L,I) = " << L << "," << I << endl;
-}
+};
 
 /*
  * 
  */
 int main(int argc, char** argv) {
     string s = "abraca";
-    bwt(s.c_str(), s.length());
+    BWTTransformer transformer(s.length());
+    transformer.bwt(s.c_str());
+    cout << "(L,I) = " << transformer.L << "," << transformer.I << endl;
     return 0;
 }
 
