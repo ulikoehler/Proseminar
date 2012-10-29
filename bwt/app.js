@@ -13,7 +13,7 @@ console.dir("Using line-blocks");
 lineBWTOnFile(infileName, outfileName);
 }else {
 console.dir("Using blocksize " + blockSize);
-bwtOnFile(blockSize, infileName, outfileName);
+blockBWTOnFile(blockSize, infileName, outfileName);
 }
 
 
@@ -83,6 +83,11 @@ function blockBWTOnFile(blocksize, infile, outfile) {
 					if(processedPercentage >= lastPrinted+1) {
 						lastPrinted += 1;
 						console.dir("Processed " + lastPrinted + " percent of " + infile);
+					}
+					//Resize the buffer if not filled completely
+					if(bytesRead < blocksize) {
+						console.dir("Cropping...");
+						buf = buf.slice(0,bytesRead);
 					}
 					//Calculate the BWT
 					var bwtTuple = bwt.bwt(buf.toString());
