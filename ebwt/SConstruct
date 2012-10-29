@@ -74,7 +74,7 @@ project = "eBWT"
 
 cliSources = ["main.cpp"]
 env.Program(source=cliSources,
-			target=bindir+"osmtool",
+			target=bindir+"bwt",
                         CCFLAGS=ccflags + ["-s"],
 			LIBS=alllibs)
 			
