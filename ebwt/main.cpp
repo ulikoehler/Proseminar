@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <iostream>
 #include <boost/format.hpp>
 using namespace std;
 //Heapsort implementation from:
@@ -189,16 +190,39 @@ void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) 
     fclose(outFD);
 }
 
+/**
+ * Execute the BWT and choose the output filename automatically
+ */
+void autoBWT(string& infile, int blocksize) {
+    string outfile = (boost::format("%1%.%2%.bwt") % infile % blocksize).str();
+    bwtOnFile(infile.c_str(), outfile.c_str(), blocksize);
+}
+
 /*
  * 
  */
 int main(int argc, char** argv) {
+    if(argc < 2) {
+        cout << "Usage: bwt <infile> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
+        return 1;
+    }
     //Parse the args
     string infile(argv[1]);
-    int blocksize = atoi(argv[2]);
+    int minBlocksize = atoi(argv[2]);
+    if(argc < 5) { //Only single blocksize
+        cout << "Calculating BWT with blocksize " << minBlocksize << endl;
+        autoBWT(infile, minBlocksize);
+        return 0;
+    }
+    //Multiple block sizes
+    int maxBlocksize = atoi(argv[3]);
+    int blocksizeStep = atoi(argv[4]);
     //Execute the BWT
-    string outfile = (boost::format("%1%.%2%.bwt") % infile % blocksize).str();
-    bwtOnFile(infile.c_str(), outfile.c_str(), blocksize);
+    cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
+    for (int i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
+        cout << "Calculating BWT with blocksize " << i << endl;
+        autoBWT(infile, i);
+    }
     return 0;
 }
 
