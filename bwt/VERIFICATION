@@ -1,0 +1,12 @@
+The correct behaviour of the given algorithm has been ensured by:
+- The unit test which tests the abraca example from the original publication
+- Manual verification:
+ATTTCAAGGATTTATAACTTTTTGAGTCCGAAAAGAGTCGGAAATCAGAT
+|
+v
+GAGTACAAACAGGTGAGTTTTCTACGTAAGCAAAATATAGGTTTTAATTC
+
+This result from C. Elegans chromosome III has been verified by modifying the source of
+http://www-ti.informatik.uni-tuebingen.de/~reinhard/datkom/Applet1/BurrowsWheelerAppl.htm
+(GUI has been removed)
+Unfortunately the source code cannot be included here due to possible licensing issues
