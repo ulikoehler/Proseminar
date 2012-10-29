@@ -1,0 +1,4 @@
+bin
+test/*.o
+*.o
+.sconsign.dblite

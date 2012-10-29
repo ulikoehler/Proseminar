@@ -1,0 +1,84 @@
+allmodeslinkflags = ['-Wl,--gc-sections']
+dynamiclink = ['-Wl,-Bdynamic']
+staticlink = ['-Wl,-Bstatic']
+allmodescflags = ['-std=c++0x',
+                    '-ffunction-sections',
+                    '-fdata-sections',
+                    '-march=native',
+                    '-fvisibility-inlines-hidden',
+                    '-pthread',
+                    '-pipe']
+debugcflags = ['-Wall', '-g', '-DDEBUG'] + allmodescflags
+releasecflags = ['-O2', '-ffast-math', '-DNDEBUG'] + allmodescflags
+profilecflags = ['-O2',
+                    '-march=native',
+                    '-fvisibility-inlines-hidden',
+                    '-pg',
+                    '-DPROFILE'] + allmodescflags
+
+alllibs = ['tcmalloc']
+
+env = Environment()
+compilemode = ARGUMENTS.get('mode', 'release')
+#Static or dynamic linking
+linkmode = ARGUMENTS.get('link', 'dynamic')
+if linkmode == "static":
+    allmodeslinkflags += staticlink
+elif linkmode == "dynamic":
+    allmodeslinkflags += dynamiclink
+else:
+    print "Unknown linkmode: ", linkmode
+    
+# Compute the binary path
+bindir = "bin/" + compilemode + "/";
+testdir = "bin/test/"
+libpath = [bindir]
+#Set the variant dir
+#env.VariantDir('build', 'src', duplicate=0)
+# Calculate the CCFLAGS for the current mode
+if compilemode == "release":
+	ccflags = releasecflags
+elif compilemode == "debug":
+	ccflags = debugcflags
+elif compilemode == "profile":
+	ccflags = profilecflags
+        allmodeslinkflags = allmodeslinkflags + ["-pg"] #Allow gprof profiling
+        alllibs = alllibs + ["profiler"] #Add google profiler
+else:
+	print "Unknown mode: ", compilemode
+	
+ldflags = allmodeslinkflags
+# Append the flags to the construction environment
+env.Append(CCFLAGS=ccflags)
+env.Append(LINKFLAGS=ldflags)
+env.Append(LIBPATH=libpath)
+env.Append(CPPPATH=['src', 'include'])
+# Declare some commonly used libraries
+leveldb = ["leveldb", "snappy"]
+bz2 = ["bz2"]
+pocoxml = ["PocoXML"]
+boost_iostreams = ["boost_iostreams"]
+boost_program_options = ["boost_program_options"]
+boost_system = ["boost_system"]
+boost_filesystem = ["boost_filesystem"]
+boost_chrono = ["boost_chrono"]
+zlib = ["z"]
+tiff = ["tiff"]
+png = ["png"] + zlib
+boosttest = ["boost_unit_test_framework"]
+liblevelosm = ["levelosm"]
+tbb = ["tbb"] 
+
+#Build utility programs
+project = "eBWT"
+
+cliSources = ["main.cpp"]
+env.Program(source=cliSources,
+			target=bindir+"osmtool",
+                        CCFLAGS=ccflags + ["-s"],
+			LIBS=alllibs)
+			
+#Build and execute unit tests
+bwttest = env.Program(source=["test/BWTTest.cpp"],
+			target=testdir+"BWTTest",
+			LIBS=alllibs + boosttest)
