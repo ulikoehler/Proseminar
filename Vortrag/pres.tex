@@ -49,7 +49,16 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frametitle{Aufbau dieser Präsentation}
 \tableofcontents
 \end{frame}
+\section{Grundlegende Definitionen}
+\begin{frame}
+ \frametitle{Grundlegende Definitionen}
+ \begin{itemize}
+  \item Länge eines Strings $S$ : $|S|$
+ \end{itemize}
 
+\end{frame}
+
+%%%%%%% Compression basics
 \section{Grundlagen der Datenkompression}
 \begin{frame}[allowframebreaks]
 \frametitle{Große Datenmengen in der Bioinformatik}
@@ -140,14 +149,14 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Lexikographische Sortierung der Rotationen des Eingabestrings
  \end{itemize}
  \column{.45\textwidth}
-    \begin{tabular}{c|c}
-    \textbf{Row \#} & \textbf{Rotation} \\
-    0 & aabrac \\
-    1 & abraca \\
-    2 & acaabr \\
-    3 & bracaa \\
-    4 & caabra \\
-    5 & racaab \\
+    \begin{tabular}{T}
+    \textbf{M} \\
+    aabrac \\
+    abraca \\
+    acaabr \\
+    bracaa \\
+    caabra \\
+    racaab \\
     \end{tabular}
 \end{columns}
 \framebreak
@@ -184,14 +193,14 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Bereits bekannt: L ist die {\color{darkgreen}letzte Spalte} von M
  \end{itemize}
  \column{.35\textwidth}
-    \begin{tabular}{c|c}
-    \textbf{Row \#} & \textbf{Rotation} \\
-    0 & \_\_\_\_\_{\color{darkgreen}c} \\
-    1 & \_\_\_\_\_{\color{darkgreen}a} \\
-    2 & \_\_\_\_\_{\color{darkgreen}r} \\
-    3 & \_\_\_\_\_{\color{darkgreen}a} \\
-    4 & \_\_\_\_\_{\color{darkgreen}a} \\
-    5 & \_\_\_\_\_{\color{darkgreen}b} \\
+    \begin{tabular}{T}
+    \textbf{M} \\
+    \_\_\_\_\_{\color{darkgreen}c} \\
+    \_\_\_\_\_{\color{darkgreen}a} \\
+    \_\_\_\_\_{\color{darkgreen}r} \\
+    \_\_\_\_\_{\color{darkgreen}a} \\
+    \_\_\_\_\_{\color{darkgreen}a} \\
+    \_\_\_\_\_{\color{darkgreen}b}
     \end{tabular}
 \end{columns}
 \framebreak
@@ -220,14 +229,14 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \end{itemize}
 
  \column{.35\textwidth}
-    \begin{tabular}{c|l}
-    \textbf{Row \#} & \textbf{Rotation} \\
-    0 & {\color{darkgreen}a}\_\_\_\_c\\
-    1 & {\color{darkgreen}a}\_\_\_\_a\\
-    2 & {\color{darkgreen}a}\_\_\_\_r\\
-    3 & {\color{darkgreen}b}\_\_\_\_a\\
-    4 & {\color{darkgreen}c}\_\_\_\_a\\
-    5 & {\color{darkgreen}r}\_\_\_\_b\\
+    \begin{tabular}{T}
+    \textbf{M} \\
+    {\color{darkgreen}a}\_\_\_\_c\\
+    {\color{darkgreen}a}\_\_\_\_a\\
+    {\color{darkgreen}a}\_\_\_\_r\\
+    {\color{darkgreen}b}\_\_\_\_a\\
+    {\color{darkgreen}c}\_\_\_\_a\\
+    {\color{darkgreen}r}\_\_\_\_b\\
     \end{tabular}
 \end{columns}
 \framebreak
@@ -456,11 +465,12 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze, sondern auf Kompressionstestkorpora
  \end{itemize}
 \end{frame}
-\begin{frame}
+\begin{frame}[allowframebreaks]
  \frametitle{Resultate von Cox \& Bauer}
  \begin{itemize}
   \item BWT muss zur Anwendung von Sequenzdaten generalisiert werden
   \item Cox \& Bauer definieren dafür den BWT-SAP-Algorithmus
+  \item Ein Algorithmus von Bauer zur Reduktion des BWT-Speicherverbrauches ohne stark erhöhten CPU-Zeitverbrauch wird verwendet
  \end{itemize}
  \framebreak
  \includegraphics[width=\textwidth]{graph/cb-1.pdf}
@@ -469,7 +479,35 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/cb-3.pdf}
  \framebreak
+ \begin{itemize}
+  \item Im Vergleich zum früheren Verfahren \textit{ReCoil} konnte die Kompression von 1.34 Bits pro Base auf 1.21 Bits pro Base reduziert werden
+  \item Die Kompressionszeit wurde von 14 Stunden auf 1 Stunde gesenkt (auf geringfügig schnellerer Hardware)
+ \end{itemize}
 \end{frame}
+%%%%%% Own results
+\begin{frame}
+ \frametitle{Warum eine eigene Implementierung?}
+ \begin{itemize}
+  \item Alle vorgestellten Publikationen verwenden die BWT nur zusammen mit anderen Verfahren
+  \item Grundlegende Frage: Welchen Effekt hat die vorherige Anwendung der reinen BWT mit verschiedenen Blockgrößen auf bekannte Kompressionsalgorithmen?
+  \item Auf eine Speicherung von $I$ wird verzichet\\m
+  \textrightarrow\ Keine Verzerrung der Resultate durch verschiedene Repräsentationen
+ \end{itemize}
+\end{frame}
+\begin{frame}
+ \frametitle{Resultate der Eigenimplementierung}
+ \framebreak\\
+ \includegraphics[width=\textwidth]{graph/uk-1.pdf}
+\end{frame}
+\begin{frame}
+ \frametitle{Diskussion der eigenen Resultate}
+ \begin{itemize}
+  \item Die Ausgangsdateigrößen vor- und nach der BWT sind identisch
+  \item 
+ \end{itemize}
+
+\end{frame}
+
 %%%%%% Conclusion
 \begin{frame}[allowframebreaks]
  \frametitle{Zusammenfassung}

@@ -22,12 +22,12 @@ library(ggplot2)
 
 pdf(file="uk-1.pdf",height=5,width=7)
 
-ggplot(data=df1, aes(x=Algorithm, y=Time, fill=Pre)) + 
+ggplot(data=df1, aes(x=Algorithm, y=Ratio, fill=Pre)) + 
     geom_bar(colour="black", stat="identity",
              position=position_dodge(),
              size=.3) +                        # Thinner lines
     scale_fill_hue(name="Erste Codierungsstufe") +      # Set legend title
-    xlab("Algorithmus") + ylab("Relative Größe (%)") + # Set axis labels
+    xlab("Algorithmus") + ylab("Relative GrÃ¶ÃŸe (%)") + # Set axis labels
     ggtitle("Kompression des C. Elegans Chromosoms III (FASTA)") +  # Set title
     theme()
     
