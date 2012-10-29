@@ -9,9 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <limits>
-#include <iostream>
-#include <algorithm>
+#include <boost/format.hpp>
 using namespace std;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
@@ -122,6 +120,23 @@ struct BWTTransformer {
         L = new char[datasize];
     }
 
+    ~BWTTransformer() {
+        delete[] m;
+        delete[] L;
+    }
+
+    //Resize this transformer. Deletes previous data
+
+    void resize(unsigned int newSize) {
+        //Delete old data
+        delete[] m;
+        delete[] L;
+        //Initialize new data
+        this->datasize = newSize;
+        m = new char[2 * newSize];
+        L = new char[2 * newSize];
+    }
+
     void bwt(const char* s) {
         //Double the string to allow in-place rotation building
         // (don't double the NUL terminator)
@@ -146,14 +161,44 @@ struct BWTTransformer {
     }
 };
 
+void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) {
+    FILE* inFD = fopen(infile, "r");
+    FILE* outFD = fopen(outfile, "w");
+    //Initialize the transformer
+    BWTTransformer transformer(blocksize);
+    char* buf = new char[blocksize];
+    while (true) {
+        size_t read = fread(buf, 1, blocksize, inFD);
+        if (read < blocksize) { //Last block
+            if (read == 0) { //No data
+                break; //Stop immediately
+            }
+            //Execute the BWT on the last block
+            transformer.resize(read);
+            transformer.bwt(buf);
+            //Write it
+            fwrite(transformer.L, 1, read, outFD);
+        }
+        //Do the BWT
+        transformer.bwt(buf);
+        //Write it
+        fwrite(transformer.L, 1, blocksize, outFD);
+    }
+    delete buf;
+    fclose(inFD);
+    fclose(outFD);
+}
+
 /*
  * 
  */
 int main(int argc, char** argv) {
-    string s = "abraca";
-    BWTTransformer transformer(s.length());
-    transformer.bwt(s.c_str());
-    cout << "(L,I) = " << transformer.L << "," << transformer.I << endl;
+    //Parse the args
+    string infile(argv[1]);
+    int blocksize = atoi(argv[2]);
+    //Execute the BWT
+    string outfile = (boost::format("%1%.%2%.bwt") % infile % blocksize).str();
+    bwtOnFile(infile.c_str(), outfile.c_str(), blocksize);
     return 0;
 }
 
