@@ -218,8 +218,8 @@ void autoBWT(string& infile, string& outdir, int blocksize) {
     bwtOnFile(infile.c_str(), outfile.c_str(), outfileMTF.c_str(), blocksize);
     //Execute gzip on the files
     cout << "GZipping " << outfile << " and " << outfileMTF << endl;
-    system("gzip " + outfile.c_str());
-    system("gzip " + outfileMTF.c_str());
+    system(("gzip " + outfile).c_str());
+    system(("gzip " + outfileMTF).c_str());
 }
 
 /*
