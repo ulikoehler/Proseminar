@@ -202,6 +202,7 @@ void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, 
     delete buf;
     fclose(inFD);
     fclose(outFD);
+    fclose(mtfFD);
 }
 
 /**
