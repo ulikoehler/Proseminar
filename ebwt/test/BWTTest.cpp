@@ -4,16 +4,16 @@
 #include <boost/format.hpp>
 #include <iostream>
 #include <map>
+#include <boost/algorithm/string.hpp>
 
-BOOST_AUTO_TEST_CASE(TestConvertStringToNanodegree) {
-    //BOOST_CHECK_EQUAL(1000000000L, coordinateStringToNanodegrees("01.0000000")); //Simple test for starters
-    //BOOST_CHECK_EQUAL(49727322000L, coordinateStringToNanodegrees("49.7273220")); //form (3)
-    //BOOST_CHECK_EQUAL(-9727322000L, coordinateStringToNanodegrees("-9.7273220"));
-}
+using namespace std;
 
-
-BOOST_AUTO_TEST_CASE(TestNanodegreeStringToCoordinate) {
-    //BOOST_CHECK_EQUAL(1000000000L, nanodegreeStringToCoordinate("1000000000")); //Simple test for starters
-    //BOOST_CHECK_EQUAL(49727322000L, nanodegreeStringToCoordinate("49727322000")); //form (3)
-    //BOOST_CHECK_EQUAL(-9727322000L, nanodegreeStringToCoordinate("-9727322000"));
+BOOST_AUTO_TEST_CASE(TestInfilenameProcessing) {
+    string infile = "/home/uli/test.txt";
+    infile.erase(0,infile.find_last_of('/')+1);
+    BOOST_CHECK_EQUAL("test.txt", infile);
+    //Test without slash
+    infile = "test.txt";
+    infile.erase(0,infile.find_last_of('/')+1);
+    BOOST_CHECK_EQUAL("test.txt", infile);
 }

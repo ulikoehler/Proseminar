@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 using namespace std;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
@@ -198,8 +199,13 @@ void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) 
 /**
  * Execute the BWT and choose the output filename automatically
  */
-void autoBWT(string& infile, int blocksize) {
-    string outfile = (boost::format("%1%.%2%.bwt") % infile % blocksize).str();
+void autoBWT(string& infile, string& outdir, int blocksize) {
+    if(!boost::ends_with(outdir, "/")) {
+        outdir += "/";
+    }
+    string infilename = infile.erase(0,infile.find_last_of('/')+1);
+    string outfile = (boost::format("%3%%1%.%2%.bwt") % infilename % blocksize % outdir).str();
+    cout << "  Writing to " << outfile << endl;
     bwtOnFile(infile.c_str(), outfile.c_str(), blocksize);
 }
 
@@ -208,25 +214,28 @@ void autoBWT(string& infile, int blocksize) {
  */
 int main(int argc, char** argv) {
     if(argc < 2) {
-        cout << "Usage: bwt <infile> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
+        cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
         return 1;
     }
     //Parse the args
     string infile(argv[1]);
-    int minBlocksize = atoi(argv[2]);
-    if(argc < 5) { //Only single blocksize
+    //Remove path
+    string outdir(argv[2]);
+    int minBlocksize = atoi(argv[3]);
+    //Only single or multiple blocksizes
+    if(argc < 6) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
-        autoBWT(infile, minBlocksize);
+        autoBWT(infile, outdir, minBlocksize);
         return 0;
     } 
    //Multiple block sizes
-    int maxBlocksize = atoi(argv[3]);
-    int blocksizeStep = atoi(argv[4]);
+    int maxBlocksize = atoi(argv[4]);
+    int blocksizeStep = atoi(argv[5]);
     //Execute the BWT
     cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
     for (int i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
         cout << "Calculating BWT with blocksize " << i << endl;
-        autoBWT(infile, i);
+        autoBWT(infile, outdir, i);
     }
     return 0;
 }
