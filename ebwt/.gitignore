@@ -2,3 +2,5 @@ bin
 test/*.o
 *.o
 .sconsign.dblite
+bwt
+.dep.inc
