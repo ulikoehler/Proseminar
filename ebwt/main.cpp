@@ -12,6 +12,7 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include "mtf.hpp"
 using namespace std;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
@@ -167,9 +168,10 @@ struct BWTTransformer {
     }
 };
 
-void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) {
+void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, unsigned int blocksize) {
     FILE* inFD = fopen(infile, "r");
     FILE* outFD = fopen(outfile, "w");
+    FILE* mtfFD = fopen(outfileMTF, "w");
     //Initialize the transformer
     BWTTransformer transformer(blocksize);
     char* buf = new char[blocksize];
@@ -184,12 +186,18 @@ void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) 
             transformer.bwt(buf);
             //Write it
             fwrite(transformer.L, 1, read, outFD);
+            //MTF-Encode
+            moveToFrontEncodeWithAlphabet(transformer.L, read);
+            fwrite(transformer.L, 1, read, mtfFD);
             break;
         }
         //Do the BWT
         transformer.bwt(buf);
         //Write it
         fwrite(transformer.L, 1, blocksize, outFD);
+        //MTF-Encode
+        moveToFrontEncodeWithAlphabet(transformer.L, blocksize);
+        fwrite(transformer.L, 1, blocksize, mtfFD);
     }
     delete buf;
     fclose(inFD);
@@ -200,20 +208,25 @@ void bwtOnFile(const char* infile, const char* outfile, unsigned int blocksize) 
  * Execute the BWT and choose the output filename automatically
  */
 void autoBWT(string& infile, string& outdir, int blocksize) {
-    if(!boost::ends_with(outdir, "/")) {
+    if (!boost::ends_with(outdir, "/")) {
         outdir += "/";
     }
-    string infilename = infile.erase(0,infile.find_last_of('/')+1);
+    string infilename = infile.erase(0, infile.find_last_of('/') + 1);
     string outfile = (boost::format("%3%%1%.%2%.bwt") % infilename % blocksize % outdir).str();
-    cout << "  Writing to " << outfile << endl;
-    bwtOnFile(infile.c_str(), outfile.c_str(), blocksize);
+    string outfileMTF = (boost::format("%3%%1%.%2%.bwt.mtf") % infilename % blocksize % outdir).str();
+    cout << "  Writing to " << outfile << " and " << outfileMTF << endl;
+    bwtOnFile(infile.c_str(), outfile.c_str(), outfileMTF.c_str(), blocksize);
+    //Execute gzip on the files
+    cout << "GZipping " << outfile << " and " << outfileMTF << endl;
+    system("gzip " + outfile.c_str());
+    system("gzip " + outfileMTF.c_str());
 }
 
 /*
  * 
  */
 int main(int argc, char** argv) {
-    if(argc < 2) {
+    if (argc < 2) {
         cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
         return 1;
     }
@@ -223,12 +236,12 @@ int main(int argc, char** argv) {
     string outdir(argv[2]);
     int minBlocksize = atoi(argv[3]);
     //Only single or multiple blocksizes
-    if(argc < 6) { //Only single blocksize
+    if (argc < 6) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
         autoBWT(infile, outdir, minBlocksize);
         return 0;
-    } 
-   //Multiple block sizes
+    }
+    //Multiple block sizes
     int maxBlocksize = atoi(argv[4]);
     int blocksizeStep = atoi(argv[5]);
     //Execute the BWT

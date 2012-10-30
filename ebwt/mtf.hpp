@@ -41,7 +41,7 @@ string alphabetToString(const deque<char>& alphabet) {
 
 deque<char> alphabetFromString(const string& s) {
     deque<char> ret;
-    for(char c : s) {
+    for (char c : s) {
         ret.push_back(c);
     }
     return ret;
@@ -64,5 +64,12 @@ void moveToFrontEncode(char* str, size_t len, deque<char>& alphabet) {
         alphabet.push_front(val);
     }
 }
+
+void moveToFrontEncodeWithAlphabet(char* str, size_t len) {
+    deque<char> alphabet = getAlphabet(str, len);
+    moveToFrontEncode(str, len, alphabet);
+}
+
+
 #endif	/* MTF_HPP */
 
