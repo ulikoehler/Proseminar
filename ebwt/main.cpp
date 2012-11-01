@@ -175,7 +175,7 @@ struct BWTTransformer {
 size_t getFilesizeInBytes(const char* filename) {
 	struct stat filestatus;
 	stat(filename, &filestatus);
-	return filestatus.st_size();
+	return filestatus.st_size;
 }
 
 void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, unsigned int blocksize) {
@@ -253,6 +253,11 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut) 
     size_t btwMtfCompressedSize = getFilesizeInBytes(mtfCompressedFile.c_str());
     statsOut << blocksize << ',' << btwOnlySize << ',' << btwCompressedSize << ','
 		<< btwMtfSize << ',' << btwMtfCompressedSize << endl;
+    //Remove the files
+    remove(outfile.c_str());
+    remove(outfileMTF.c_str());
+    remove(compressedFile.c_str());
+    remove(mtfCompressedFile.c_str());
 }
 
 /*
@@ -274,7 +279,7 @@ int main(int argc, char** argv) {
     //Only single or multiple blocksizes
     if (argc < 6) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
-        autoBWT(infile, outdir, minBlocksize);
+        autoBWT(infile, outdir, minBlocksize, statsOut);
         return 0;
     }
     //Multiple block sizes
