@@ -225,9 +225,15 @@ void autoBWT(string& infile, string& outdir, int blocksize) {
     cout << "Compressing " << outfile << " and " << outfileMTF << endl;
     string mtfCompressed = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
     string compressed = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
-    
-    system((boost::format("~/bin/huffcode -i %1% -o %2%") % outfile % compressed).str().c_str());
-    system((boost::format("~/bin/huffcode -i %1% -o %2%") % outfile % compressed).str().c_str());
+    //Build the compress system calls
+    string huffcodePath = "/home/k/koehleru/bin/huffcode";
+    //const string huffcodePath = "huffcode";
+    string compressCmd = (boost::format("%3% -i %1% -o %2%") % outfile % compressed % huffcodePath).str();
+    cout << "   Compressing: " << compressCmd << endl;
+    string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTF % mtfCompressed % huffcodePath).str();
+    cout << "   Compressing MTF: " << compressCmd << endl;
+    system(compressCmd.c_str());
+    system(compressMTFCmd.c_str());
 }
 
 /*
