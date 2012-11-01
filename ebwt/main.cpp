@@ -12,6 +12,10 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fstream>
 #include "mtf.hpp"
 using namespace std;
 //Heapsort implementation from:
@@ -168,6 +172,12 @@ struct BWTTransformer {
     }
 };
 
+size_t getFilesizeInBytes(const char* filename) {
+	struct stat filestatus;
+	stat(filename, &filestatus);
+	return filestatus.st_size();
+}
+
 void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, unsigned int blocksize) {
     FILE* inFD = fopen(infile, "r");
     FILE* outFD = fopen(outfile, "w");
@@ -208,7 +218,7 @@ void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, 
 /**
  * Execute the BWT and choose the output filename automatically
  */
-void autoBWT(string& infile, string& outdir, int blocksize) {
+void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut) {
     //IGNORE blocksize == 0
     if(blocksize == 0) {
 	return;
@@ -223,17 +233,26 @@ void autoBWT(string& infile, string& outdir, int blocksize) {
     bwtOnFile(infile.c_str(), outfile.c_str(), outfileMTF.c_str(), blocksize);
     //Execute gzip on the files
     cout << "Compressing " << outfile << " and " << outfileMTF << endl;
-    string mtfCompressed = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
-    string compressed = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
+    string compressedFile = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
+    string mtfCompressedFile = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
     //Build the compress system calls
     string huffcodePath = "/home/k/koehleru/bin/huffcode";
-    //const string huffcodePath = "huffcode";
-    string compressCmd = (boost::format("%3% -i %1% -o %2%") % outfile % compressed % huffcodePath).str();
+    //string huffcodePath = "huffcode";
+    string compressCmd = (boost::format("%3% -i %1% -o %2%") % outfile % compressedFile % huffcodePath).str();
     cout << "   Compressing: " << compressCmd << endl;
-    string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTF % mtfCompressed % huffcodePath).str();
+    string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTF % mtfCompressedFile % huffcodePath).str();
     cout << "   Compressing MTF: " << compressCmd << endl;
     system(compressCmd.c_str());
     system(compressMTFCmd.c_str());
+    //
+    // Evaluate the resulting filesizes
+    //
+    size_t btwOnlySize = getFilesizeInBytes(outfile.c_str());
+    size_t btwMtfSize = getFilesizeInBytes(outfileMTF.c_str());
+    size_t btwCompressedSize = getFilesizeInBytes(compressedFile.c_str());
+    size_t btwMtfCompressedSize = getFilesizeInBytes(mtfCompressedFile.c_str());
+    statsOut << blocksize << ',' << btwOnlySize << ',' << btwCompressedSize << ','
+		<< btwMtfSize << ',' << btwMtfCompressedSize << endl;
 }
 
 /*
@@ -244,6 +263,9 @@ int main(int argc, char** argv) {
         cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
         return 1;
     }
+    //Create the statistics output file
+    ofstream statsOut("ebwt.statistics.txt");
+    statsOut << "Blocksize,Nur BWT,BTW+Huffman,BWT+MTF,BTW+MTF+Huffman" << endl;
     //Parse the args
     string infile(argv[1]);
     //Remove path
@@ -262,8 +284,10 @@ int main(int argc, char** argv) {
     cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
     for (int i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
         cout << "Calculating BWT with blocksize " << i << endl;
-        autoBWT(infile, outdir, i);
+        autoBWT(infile, outdir, i, statsOut);
     }
+    //Close the statistics FD
+    statsOut.close();
     return 0;
 }
 
