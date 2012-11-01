@@ -209,6 +209,10 @@ void bwtOnFile(const char* infile, const char* outfile, const char* outfileMTF, 
  * Execute the BWT and choose the output filename automatically
  */
 void autoBWT(string& infile, string& outdir, int blocksize) {
+    //IGNORE blocksize == 0
+    if(blocksize == 0) {
+	return;
+    }
     if (!boost::ends_with(outdir, "/")) {
         outdir += "/";
     }
@@ -218,9 +222,12 @@ void autoBWT(string& infile, string& outdir, int blocksize) {
     cout << "  Writing to " << outfile << " and " << outfileMTF << endl;
     bwtOnFile(infile.c_str(), outfile.c_str(), outfileMTF.c_str(), blocksize);
     //Execute gzip on the files
-    cout << "GZipping " << outfile << " and " << outfileMTF << endl;
-    system(("gzip " + outfile).c_str());
-    system(("gzip " + outfileMTF).c_str());
+    cout << "Compressing " << outfile << " and " << outfileMTF << endl;
+    string mtfCompressed = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
+    string compressed = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
+    
+    system((boost::format("~/bin/huffcode -i %1% -o %2%") % outfile % compressed).str().c_str());
+    system((boost::format("~/bin/huffcode -i %1% -o %2%") % outfile % compressed).str().c_str());
 }
 
 /*
