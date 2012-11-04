@@ -269,9 +269,10 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     size_t bwtMtfCompressedSize = getFilesizeInBytes(btwMtfCompressedFile.c_str()); //BWT+MTF+Huff
     size_t mtfOnlyCompressedSize = getFilesizeInBytes(mtfOnlyCompressedFile.c_str()); //MTF+Huff
     //R
-    statsOut << blocksize << ',' << "BWTMTF" << ',' << bwtMtfSize << '\n'
-	<< blocksize << ',' << "Huffman" << ',' << mtfOnlyCompressedSize << '\n'
+    statsOut 
+	<< blocksize << ',' << "Huffman" << ',' << huffSize << '\n'
 	<< blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
+	<< blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
 	<< blocksize << ',' << "BWT+Huffman" << ',' << bwtCompressedSize << '\n'
 	<< blocksize << ',' << "MTF+Huffman" << ',' << mtfOnlyCompressedSize << '\n'
 	<< blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfCompressedSize << endl;
