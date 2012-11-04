@@ -5,7 +5,7 @@ df1 <- as.data.frame(read.csv(file="../../rawdata/ebwt.statistics.chrIII.fa.txt"
 #df1 <- transform(df1, Algorithm = reorder(BTW+MTF+Huffman, Index))
 library(ggplot2)
 
-pdf(file="uk-new-1.pdf",height=5,width=7)
+pdf(file="uk-new-celegans.pdf",height=5,width=7)
 
 ggplot(data=df1, aes(x=Blocksize, y=Size, group=Algorithm)) +
     #geom_hline(yintercept=4767686) +

@@ -64,6 +64,8 @@
 %Line spacing
 \usepackage{setspace}
 
+\usepackage{inconsolata}
+
 
 %Header declarations
 \pagestyle{headings}
@@ -110,12 +112,30 @@
 \thispagestyle{empty}\newpage %No page numbering on titlepage
 \tableofcontents\thispagestyle{empty}\newpage 
 \section{Einleitung}
-Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation für die Textkompression und insbesondere dessen Anwendung in der Bioinformatik behandelt werden.
-\section{Rolle der Kompression in der Bioinformatik}
-\subsection{Prinzip der Kompression}
+Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation für die Textkompression und deren Anwendung in der Bioinformatik behandelt werden. Insbesondere wird dabei auf die Bedeutung der Move-To-Front-Kodierung und der Huffman-Kompression eingegangen, da diese Verfahren für 
+\section{Kompression in der Bioinformatik}
+\subsection{Prinzip der Verlustfreien Kompression}
+In vielen realen Datensätzen sind starke Redundanzen enthalten. Oft ist die Größe des Alphabets nicht sehr groß (z.B. 36 Alphanumerische Zeichen plus Sonderzeichen in englischen Texten oder 4 Nukleinbasen in DNA- oder RNA-Sequenzen) oder Texte sind stark autokorreliert.
+
+Kompressionsalgorithmen sind Verfahren, die diese Redundanzen eliminieren und dadurch eine platzsparende Speicherung der Daten erlauben, wärend die ursprünglichen unkomprimierten Daten jederzeit vollständig rekonstruiert werden können.
 \subsection{Große Datenmengen in der Bioinformatik}
-Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große Datenmengen,
+Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große Datenmengen. Sofern die Rohdaten, die vom jeweiligen Sequenzierverfahren erzeugt wurden, persistent gespeichert werden sollen, muss eine große Menge an Datenträgern mit großer Speicherkapazität zur Verfügung gestellt werden, durch die die Projektkosten stark ansteigen.
+
+Kompressionsalgorithmen bieten die Möglichkeit, die Anzahl der notwendigen Datenträgern zu reduzieren - obwohl für die Kompression und die Dekompression Rechenzeit benötigt wird, ist dennoch oft die Zugriffszeit auf einzelne Datensätze geringer, da die Rechenwerke mitunter schneller dekomprimieren können als die unkomprimierten Daten vom entsprechenden Datenträger gelesen werden können.
+
+Verschiedene Kompressionsalgorithmen sind für verschiedene Typen von Datensätzen bzw. Datenbanken geeignet - insbesondere können schnellere Algorithmen meist besser komprimieren als langsamere Algorithmen.
+\subsection{Ein naiver Kompressionsalgorithmus}
+Einer der naivsten denkbaren Kompressionsalgorithmen fasst Runs aufeinanderfolgender gleicher Zeichen zusammen.
+So wird beispielsweise \texttt{AAAAAAAAATTT} zu \texttt{9*A,3*T} zusammengefasst. Sofern der zu komprimierende Datensatz viele und lange solche Runs enthält, erzielt dieser Algorithmus unter Einsatz von sehr wenig Rechenzeit gute Ergebnisse. Allerdings können damit z.B. Mikrosatelliten wie $(AT)_n$ überhaupt nicht komprimiert werden.
+\section{Die Burrows-Wheeler-Transformation}
+Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige\footnote{Durch die Resultate der im Rahmen dieser Arbeit entwickelten Software \texttt{eBWT} kann gezeigt werden, dass insbesondere mit Dictionary-basierten Kompressionsalgorithmen der von der BWT erzeugt Text oft schlechter kompressibel ist als der Originaltext} Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext.
+\subsection{Die Burrows-Wheeler-Vorwärtstransformation}
+\subsection{Die Burrows-Wheeler-Rückwärtstransformation}
+\subsection{Komplexität und Laufzeitverhalten}
+Die Burrows-Wheeler-Transformation hat die asymptotische Komplexität $\mathcal{O}(n^2)$. Die Sortierung während der Transformation nimmt von den Teilschritten des Verfahrens am meisten Rechenzeit in Anspruch - daher hängt das Laufzeitverhalten insbesondere von der Wahl der Sortierungsalgorithmus ab. Burrows und Wheeler stellen in \cite{burrows1994block} einen modifizierten Quicksort-Algorithmus vor, der für den von ihnen verwendeten Calgary-Kompressionstestkorpus das beste Laufzeitverhalten zeigte. Das lässt sich allerdings nicht notwendigerweise auf andere Datensätze, insbesondere nicht auf Bioinformatische Datensätze verallgemeinern.
+
+
 \renewcommand\refname{Literatur- und Quellenverzeichnis}
 \bibliographystyle{alphadin}
-\bibliography{visualization}
+\bibliography{library}
 \end{document}
