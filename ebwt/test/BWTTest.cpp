@@ -6,6 +6,7 @@
 #include <map>
 #include <boost/algorithm/string.hpp>
 #include "../mtf.hpp"
+#include "../util.hpp"
 
 using namespace std;
 
@@ -53,7 +54,6 @@ BOOST_AUTO_TEST_CASE(TestMTFWithCopy) {
     char* test = new char[strlen(testConst)];
     deque<char> alphabet = alphabetFromString("abcdefghijklmnopqrstuvwxyz");
     moveToFrontEncodeCopy(testConst, strlen(test), test, alphabet); //In-place
-    //BAD!! std::string modification in-place
     BOOST_CHECK_EQUAL(1, test[0]);
     BOOST_CHECK_EQUAL(1, test[1]);
     BOOST_CHECK_EQUAL(13, test[2]);
@@ -62,4 +62,14 @@ BOOST_AUTO_TEST_CASE(TestMTFWithCopy) {
     BOOST_CHECK_EQUAL(1, test[5]);
     BOOST_CHECK_EQUAL(0, test[6]);
     BOOST_CHECK_EQUAL(0, test[7]);
+}
+
+
+BOOST_AUTO_TEST_CASE(TestGetFilenameFromPath) {
+    BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("test.txt"));
+    BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("/home/test.txt"));
+    BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("/home/user/test.txt"));
+    BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("//test.txt"));
+    BOOST_CHECK_EQUAL("test", getFilenameFromPath("tmp/test"));
+    BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("./test.txt"));
 }

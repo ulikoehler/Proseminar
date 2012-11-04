@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <fstream>
 #include "mtf.hpp"
+#include "util.hpp"
 using namespace std;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
@@ -302,12 +303,12 @@ int main(int argc, char** argv) {
     int minBlocksize = atoi(argv[3]);
     //Huffman-compress the original file and get its size
     string compressedOriginalFilename = (boost::format("%2%%1%.huff") % infile % outdir).str();
-    cout << "Compressing original file to " << compressedOriginalFilename << '\n';
     string compressOrigCommand = (boost::format("%3% -i %1% -o %2%") % infile % compressedOriginalFilename % huffcodePath).str();
+    cout << "Compressing original file: " << compressOrigCommand << '\n';
     int ret = system(compressOrigCommand.c_str());
     size_t compressedOriginalSize = getFilesizeInBytes(compressedOriginalFilename.c_str());
-    remove(compressedOriginalFilename.c_str());
-    cout << "Compressed original file has size " << compressedOriginalSize << '\n';
+    //remove(compressedOriginalFilename.c_str());
+    cout << "Compressed original file has size " << compressedOriginalSize << endl;
     //Only single or multiple blocksizes
     if (argc < 6) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
