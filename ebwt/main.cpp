@@ -252,7 +252,7 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTFOnly % mtfOnlyCompressedFile % huffcodePath).str();
     cout << "   Compressing BTW: " << compressBWTCmd
 	   << "\n   Compressing BTW+MTF: " << compressBWTMTFCmd
-	   << "\n   Compressing MTF: " << compressMTFCmd << '\n';
+	   << "\n   Compressing MTF: " << compressMTFCmd << endl;
     
     int ret = system(compressBWTCmd.c_str());
     ret = system(compressBWTMTFCmd.c_str());
@@ -269,17 +269,16 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     size_t bwtMtfCompressedSize = getFilesizeInBytes(btwMtfCompressedFile.c_str()); //BWT+MTF+Huff
     size_t mtfOnlyCompressedSize = getFilesizeInBytes(mtfOnlyCompressedFile.c_str()); //MTF+Huff
     //R
-    statsOut << blocksize <<  "BWTMTF" << bwtMtfSize << '\n'
-	<< blocksize << "Huffman" << mtfOnlyCompressedSize << '\n'
-	<< blocksize << "MTF" << mtfOnlySize << '\n'
-	<< blocksize << "BWT+Huffman" << bwtCompressedSize << '\n'
-	<< blocksize << "MTF+Huffman" << mtfOnlyCompressedSize << '\n'
-	<< blocksize << "BWT+MTF+Huffman" << bwtMtfCompressedSize << '\n';
+    statsOut << blocksize << ',' << "BWTMTF" << ',' << bwtMtfSize << '\n'
+	<< blocksize << ',' << "Huffman" << ',' << mtfOnlyCompressedSize << '\n'
+	<< blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
+	<< blocksize << ',' << "BWT+Huffman" << ',' << bwtCompressedSize << '\n'
+	<< blocksize << ',' << "MTF+Huffman" << ',' << mtfOnlyCompressedSize << '\n'
+	<< blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfCompressedSize << endl;
     //Remove the files
     remove(outfileBWTOnly.c_str());
     remove(outfileBWTMTF.c_str());
     remove(outfileMTFOnly.c_str());
-    
     remove(btwOnlyCompressedFile.c_str());
     remove(btwMtfCompressedFile.c_str());
     remove(mtfOnlyCompressedFile.c_str());
@@ -293,21 +292,21 @@ int main(int argc, char** argv) {
         cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
         return 1;
     }
-    //Create the statistics output file
-    ofstream statsOut("ebwt.statistics.txt");
-    statsOut << "Blocksize,Algorithm,Size" << '\n';
     //Parse the args
     string infile(argv[1]);
     //Remove path
     string outdir(argv[2]);
     int minBlocksize = atoi(argv[3]);
+    //Create the statistics output file
+    ofstream statsOut((boost::format("ebwt.statistics.%1%.txt") % getFilenameFromPath(infile)).str().c_str());
+    statsOut << "Blocksize,Algorithm,Size" << '\n';
     //Huffman-compress the original file and get its size
-    string compressedOriginalFilename = (boost::format("%2%%1%.huff") % infile % outdir).str();
+    string compressedOriginalFilename = (boost::format("%2%%1%.huff") % getFilenameFromPath(infile) % outdir).str();
     string compressOrigCommand = (boost::format("%3% -i %1% -o %2%") % infile % compressedOriginalFilename % huffcodePath).str();
     cout << "Compressing original file: " << compressOrigCommand << '\n';
     int ret = system(compressOrigCommand.c_str());
     size_t compressedOriginalSize = getFilesizeInBytes(compressedOriginalFilename.c_str());
-    //remove(compressedOriginalFilename.c_str());
+    remove(compressedOriginalFilename.c_str());
     cout << "Compressed original file has size " << compressedOriginalSize << endl;
     //Only single or multiple blocksizes
     if (argc < 6) { //Only single blocksize
