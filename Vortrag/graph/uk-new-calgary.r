@@ -1,4 +1,4 @@
-df1 <- as.data.frame(read.csv(file="../../rawdata/ebwt.statistics.chrIII.fa.txt",head=TRUE,sep=","))
+df1 <- as.data.frame(read.csv(file="../../rawdata/ebwt.statistics.book1.txt",head=TRUE,sep=","))
 
 #Original size
 
