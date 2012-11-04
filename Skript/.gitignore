@@ -1,0 +1,11 @@
+skript.aux
+skript.nav
+*.log
+skript.out
+skript.pdf
+skript.snm
+skript.toc
+skript.tex.backup
+skript.tex~
+skript.lof
+*.kate-swp

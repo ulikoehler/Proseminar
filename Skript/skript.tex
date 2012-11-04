@@ -1,0 +1,116 @@
+\documentclass[ngerman,pdftex,paper=A4,DIV=calc,titlepage,12pt]{scrartcl}
+
+%Global options
+\usepackage[paper=a4paper,includefoot,includehead,left=20mm,right=20mm,top=20mm,bottom=20mm]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage[ngerman]{babel}
+%\usepackage[%colorlinks=true,
+	    %linkcolor=red,
+	    %anchorcolor=black,
+	    %citecolor=green,
+	    %pagecolor=red,
+	    %urlcolor=cyan
+	    %]
+	    %{hyperref}
+\usepackage{nameref}
+
+%Page header
+\usepackage{fancyhdr}
+\usepackage{fancyhdr} 
+\pagestyle{fancyplain}
+\headheight\baselineskip
+\topmargin-0.75cm
+\textheight47\baselineskip
+\def\MakeUppercase#1{#1}
+\makeatletter
+\lhead[\fancyplain{}{\thepage}]
+      {\fancyplain{}{\slshape Burrows-Wheeler-Transformation}} % <--- Titel eintragen
+\rhead[\fancyplain{}{\slshape Uli Köhler	}]    % <--- Name eintragen
+      {\fancyplain{}{\thepage}}
+\cfoot[]{}
+\makeatother
+
+
+%Theorems
+\usepackage{thmbox} %Boxed theorems
+
+%Tables, Floats and figures
+\usepackage{array}
+\usepackage{float} %COnfigure figure floats to be boxed
+  \floatstyle{boxed}
+  \restylefloat{figure}
+
+%Special formats
+\usepackage{url}
+
+%Citations and references
+\usepackage{cite}
+\usepackage[german]{fancyref}
+\usepackage[german]{varioref}
+\renewcommand{\reftextfaceafter}{auf der \reftextvario{gegenüberliegenden}{nächsten} Seite} 
+\renewcommand{\reftextfacebefore}{auf der \reftextvario{gegenüberliegenden}{vorherigen} Seite} 
+\renewcommand{\reftextafter}{auf der \reftextvario{nächsten}{folgenden} Seite} 
+\renewcommand{\reftextbefore}{auf \reftextvario{der vorhergehenden}{der letzten} Seite} 
+\renewcommand{\reftextcurrent}{auf \reftextvario{der aktuellen}{dieser} Seite}
+
+
+%Typography, language and error corrections:
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} %Latin modern = enhanced CM font
+\usepackage{xspace} %Space enhancements
+\usepackage[tracking=true,activate={true,nocompatibility},babel=true]{microtype} %PDFTeX typography enhancements
+\usepackage{fixltx2e}
+%Line spacing
+\usepackage{setspace}
+
+
+%Header declarations
+\pagestyle{headings}
+
+%Create a new boxed type of theorems
+\newtheorem[L]{boxedDefinition}{Definition}
+\newtheorem{definition}{Definition}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+%Scriptsized, vertically and horizontally centered tabular column type
+\newcolumntype{s}[1]{>{\scriptsize\centering\arraybackslash}m{#1}}
+
+\title{3D-Tumorvisualisation}
+\subtitle{Seminararbeit}
+\author{Uli Köhler}
+%\institute[EMG]{Ernst-Mach-Gymnasium Haar}
+\date{9.~November 2010}
+
+\newcommand{\footnoteremember}[2]{\footnote{#2}\newcounter{#1}\setcounter{#1}{\value{footnote}}}
+\newcommand{\footnoterecall}[1]{\footnotemark[\value{#1}]}
+%Utility to insert a newline after a paragraph declaration
+\newcommand{\paranl}{$~~$\\}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\sloppy
+\begin{document}
+\begin{titlepage}
+\begin{center}
+ Proseminar \glqq Algorithmen der Bioinformatik\grqq
+ \end{center}
+\vspace{4cm}
+\begin{center}
+  
+ \large\textsc{Ausarbeitung}\\[5mm]
+ {\Huge\centering\bfseries\selectfont Textkompression:\\Burrows-Wheeler-Transformation}\\[2cm]
+\begin{center}
+  Von Uli Köhler\\
+  5.11.2012
+\end{center}
+\vspace{2cm}
+\end{center}
+\end{titlepage}
+\thispagestyle{empty}\newpage %No page numbering on titlepage
+\tableofcontents\thispagestyle{empty}\newpage 
+\section{Einleitung}
+Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation für die Textkompression und insbesondere dessen Anwendung in der Bioinformatik behandelt werden.
+\section{Kompression in der Bioinformatik}
+\subsection{Groß}
+\end{document}
