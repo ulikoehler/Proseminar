@@ -65,9 +65,34 @@ void moveToFrontEncode(char* str, size_t len, deque<char>& alphabet) {
     }
 }
 
+
+/**
+ * In-Place move to front encoder
+ * @param str The string to read from
+ * @param len The number of bytes to read
+ */
+void moveToFrontEncodeCopy(const char* str, size_t len, char* dest, deque<char>& alphabet) {
+    for (int i = 0; i < len; i++) {
+        const char val = str[i];
+        auto it = find(alphabet.begin(), alphabet.end(), val);
+        uint8_t index = it - alphabet.begin();
+        //Set the index
+        dest[i] = index; //Alphabet can be at most 256 characters --> no need for multi-byte indices
+        //Move the index to the front
+        alphabet.erase(it);
+        alphabet.push_front(val);
+    }
+}
+
+
 void moveToFrontEncodeWithAlphabet(char* str, size_t len) {
     deque<char> alphabet = getAlphabet(str, len);
     moveToFrontEncode(str, len, alphabet);
+}
+
+void moveToFrontEncodeWithAlphabetCopy(const char* str, size_t len, char* dest) {
+    deque<char> alphabet = getAlphabet(str, len);
+    moveToFrontEncodeCopy(str, len, dest, alphabet);
 }
 
 

@@ -47,3 +47,19 @@ BOOST_AUTO_TEST_CASE(TestMTF) {
     BOOST_CHECK_EQUAL(0, test[6]);
     BOOST_CHECK_EQUAL(0, test[7]);
 }
+
+BOOST_AUTO_TEST_CASE(TestMTFWithCopy) {
+    const char* testConst = "bananaaa"; //ATGC
+    char* test = new char[strlen(testConst)];
+    deque<char> alphabet = alphabetFromString("abcdefghijklmnopqrstuvwxyz");
+    moveToFrontEncodeCopy(testConst, strlen(test), test, alphabet); //In-place
+    //BAD!! std::string modification in-place
+    BOOST_CHECK_EQUAL(1, test[0]);
+    BOOST_CHECK_EQUAL(1, test[1]);
+    BOOST_CHECK_EQUAL(13, test[2]);
+    BOOST_CHECK_EQUAL(1, test[3]);
+    BOOST_CHECK_EQUAL(1, test[4]);
+    BOOST_CHECK_EQUAL(1, test[5]);
+    BOOST_CHECK_EQUAL(0, test[6]);
+    BOOST_CHECK_EQUAL(0, test[7]);
+}
