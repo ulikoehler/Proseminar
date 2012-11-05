@@ -16,6 +16,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
+#include <thread>
+#include <functional>
 #include "mtf.hpp"
 #include "util.hpp"
 using namespace std;
@@ -24,6 +26,9 @@ using namespace std;
 
 //Configs
 const string huffcodePath = "/home/k/koehleru/bin/huffcode";
+bool deleteRawFiles = true;
+
+typedef thread* ThreadPtr;
 
 struct Sort {
     unsigned int index;
@@ -177,12 +182,12 @@ struct BWTTransformer {
 };
 
 size_t getFilesizeInBytes(const char* filename) {
-	struct stat filestatus;
-	stat(filename, &filestatus);
-	return filestatus.st_size;
+    struct stat filestatus;
+    stat(filename, &filestatus);
+    return filestatus.st_size;
 }
 
-void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfileMTF,  const char* outfileMTFOnly, unsigned int blocksize) {
+void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfileMTF, const char* outfileMTFOnly, unsigned int blocksize) {
     FILE* inFD = fopen(infile, "r");
     FILE* bwtOnlyFD = fopen(outfileBWTOnly, "w");
     FILE* mtfFD = fopen(outfileMTF, "w");
@@ -196,19 +201,19 @@ void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfi
             if (read == 0) { //No data read
                 break; //Stop immediately
             }
-	    //Resize the internal transformer variables from the last block
+            //Resize the internal transformer variables from the last block
             transformer.resize(read);
         }
-	//
-	// Calculate MTF only and write to corresponding file (compressed later)
-	//
-	char* mtfOnlyDst = new char[read];
-	moveToFrontEncodeWithAlphabetCopy(buf, read, mtfOnlyDst);
-	fwrite(mtfOnlyDst, 1, read, mtfOnlyFD);
-	delete[] mtfOnlyDst;
-	//
-	// Calculate BWT + MTF
-	//
+        //
+        // Calculate MTF only and write to corresponding file (compressed later)
+        //
+        char* mtfOnlyDst = new char[read];
+        moveToFrontEncodeWithAlphabetCopy(buf, read, mtfOnlyDst);
+        fwrite(mtfOnlyDst, 1, read, mtfOnlyFD);
+        delete[] mtfOnlyDst;
+        //
+        // Calculate BWT + MTF
+        //
         //Do the BWT
         transformer.bwt(buf);
         //Write BWT-only
@@ -224,6 +229,27 @@ void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfi
     fclose(mtfOnlyFD);
 }
 
+enum CompressMode {
+    HUFFCODE, LZOP
+};
+
+/**
+ * Thread ftor to compress a single file using a native binary
+ */
+void compressFile(CompressMode mode, size_t& filesize, const string& input, const string& output, const string& binPath) {
+    if (mode == HUFFCODE) {
+        string cmd = (boost::format("%3% -i %1% -o %2%") % input % output % binPath).str();
+        int ret = system(cmd.c_str());
+    } else if (mode == LZOP) {
+        string cmd = (boost::format("%3% %1% -o %2%") % input % output % binPath).str();
+        int ret = system(cmd.c_str());
+    }
+    filesize = getFilesizeInBytes(output.c_str());
+    if(deleteRawFiles) {
+        remove(output.c_str());
+    }
+}
+
 /**
  * Execute the BWT and choose the output filename automatically
  * @param outdir A path to write temporary files to - must end with '/'
@@ -231,8 +257,8 @@ void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfi
  */
 void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, size_t huffSize) {
     //IGNORE blocksize == 0
-    if(blocksize == 0) {
-	return;
+    if (blocksize == 0) {
+        return;
     }
     string infilename = infile.erase(0, infile.find_last_of('/') + 1);
     //Calculate the filenames to write the data to
@@ -242,47 +268,51 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     //Execute the BWT and MTF algorithms on the input file to produce several output files
     bwtOnFile(infile.c_str(), outfileBWTOnly.c_str(), outfileBWTMTF.c_str(), outfileMTFOnly.c_str(), blocksize);
     //Execute huffcode on the files
-    string btwOnlyCompressedFile = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
-    string btwMtfCompressedFile = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
-    string mtfOnlyCompressedFile = (boost::format("%3%%1%.%2%.mtf.huff") % infilename % blocksize % outdir).str();
-    //Build the compress system calls
-    //string huffcodePath = "huffcode";
-    string compressBWTCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTOnly % btwOnlyCompressedFile % huffcodePath).str();
-    string compressBWTMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTMTF % btwMtfCompressedFile % huffcodePath).str();
-    string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTFOnly % mtfOnlyCompressedFile % huffcodePath).str();
-    cout << "   Compressing BTW: " << compressBWTCmd
-	   << "\n   Compressing BTW+MTF: " << compressBWTMTFCmd
-	   << "\n   Compressing MTF: " << compressMTFCmd << endl;
-    
-    int ret = system(compressBWTCmd.c_str());
-    ret = system(compressBWTMTFCmd.c_str());
-    ret = system(compressMTFCmd.c_str());
+    string btwHuffmanFilename = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
+    string btwMtfHuffmanFilename = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
+    string mtfHuffmanFilename = (boost::format("%3%%1%.%2%.mtf.huff") % infilename % blocksize % outdir).str();
+    //Start each compressor in a separate thread
+    //overhead should be acceptable when compared to performance gain
+    const int numThreads = 3;
+    ThreadPtr compressThreads[numThreads];
+    size_t bwtHuffmanSize = 0;
+    size_t bwtMtfHuffmanSize = 0;
+    size_t mtfHuffmanSize = 0;
+    compressThreads[0] = new thread([&](){compressFile(HUFFCODE, bwtHuffmanSize, outfileBWTOnly, btwHuffmanFilename, huffcodePath);});
+    compressThreads[1] = new thread([&](){compressFile(HUFFCODE, bwtMtfHuffmanSize, outfileBWTMTF, btwMtfHuffmanFilename, huffcodePath);});
+    compressThreads[2] = new thread([&](){compressFile(HUFFCODE, mtfHuffmanSize, outfileMTFOnly, mtfHuffmanFilename, huffcodePath);});
+    //string compressBWTCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTOnly % btwOnlyCompressedFilename % huffcodePath).str();
+    //string compressBWTMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTMTF % btwMtfCompressedFilename % huffcodePath).str();
+    //string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTFOnly % mtfOnlyCompressedFilename % huffcodePath).str();
+    //Join the threads
+    for (int i = 0; i < numThreads; i++) {
+        compressThreads[i]->join();
+        delete compressThreads[i];
+    }
     //
     // Evaluate the resulting filesizes
     //
-    
     //Uncompressed files
     size_t bwtMtfSize = getFilesizeInBytes(outfileBWTMTF.c_str());
     size_t mtfOnlySize = getFilesizeInBytes(outfileMTFOnly.c_str());
     //Compressed files
-    size_t bwtCompressedSize = getFilesizeInBytes(btwOnlyCompressedFile.c_str()); //BWT+Huff
-    size_t bwtMtfCompressedSize = getFilesizeInBytes(btwMtfCompressedFile.c_str()); //BWT+MTF+Huff
-    size_t mtfOnlyCompressedSize = getFilesizeInBytes(mtfOnlyCompressedFile.c_str()); //MTF+Huff
+    //size_t bwtCompressedSize = getFilesizeInBytes(btwOnlyCompressedFilename.c_str()); //BWT+Huff
+    //size_t bwtMtfCompressedSize = getFilesizeInBytes(btwMtfCompressedFilename.c_str()); //BWT+MTF+Huff
+    //size_t mtfOnlyCompressedSize = getFilesizeInBytes(mtfOnlyCompressedFilename.c_str()); //MTF+Huff
     //R
-    statsOut 
-	<< blocksize << ',' << "Huffman" << ',' << huffSize << '\n'
-	<< blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
-	<< blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
-	<< blocksize << ',' << "BWT+Huffman" << ',' << bwtCompressedSize << '\n'
-	<< blocksize << ',' << "MTF+Huffman" << ',' << mtfOnlyCompressedSize << '\n'
-	<< blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfCompressedSize << endl;
-    //Remove the files
-    remove(outfileBWTOnly.c_str());
-    remove(outfileBWTMTF.c_str());
-    remove(outfileMTFOnly.c_str());
-    remove(btwOnlyCompressedFile.c_str());
-    remove(btwMtfCompressedFile.c_str());
-    remove(mtfOnlyCompressedFile.c_str());
+    statsOut
+            << blocksize << ',' << "Huffman" << ',' << huffSize << '\n'
+            << blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
+            << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
+            << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize << '\n'
+            << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize << '\n'
+            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize << endl;
+    //Remove the raw files if option is enabled
+    if (deleteRawFiles) {
+        remove(outfileBWTOnly.c_str());
+        remove(outfileBWTMTF.c_str());
+        remove(outfileMTFOnly.c_str());
+    }
 }
 
 /*
@@ -298,6 +328,13 @@ int main(int argc, char** argv) {
     //Remove path
     string outdir(argv[2]);
     int minBlocksize = atoi(argv[3]);
+    //Check if raw files shall be kept
+    const char* keepRawFilesEnvValue = getenv("KEEP_RAW_FILES");
+    string keepRawFilesValueString = (keepRawFilesEnvValue == NULL ? "" : keepRawFilesEnvValue);
+    if (!keepRawFilesValueString.empty()) {
+        cout << "Keeping raw output data";
+        deleteRawFiles = false;
+    }
     //Create the statistics output file
     ofstream statsOut((boost::format("ebwt.statistics.%1%.txt") % getFilenameFromPath(infile)).str().c_str());
     statsOut << "Blocksize,Algorithm,Size" << '\n';
@@ -307,7 +344,9 @@ int main(int argc, char** argv) {
     cout << "Compressing original file: " << compressOrigCommand << '\n';
     int ret = system(compressOrigCommand.c_str());
     size_t compressedOriginalSize = getFilesizeInBytes(compressedOriginalFilename.c_str());
-    remove(compressedOriginalFilename.c_str());
+    if (deleteRawFiles) { //Remove it if keep files isn't set
+        remove(compressedOriginalFilename.c_str());
+    }
     cout << "Compressed original file has size " << compressedOriginalSize << endl;
     //Only single or multiple blocksizes
     if (argc < 6) { //Only single blocksize
