@@ -14,6 +14,8 @@
 	    %{hyperref}
 \usepackage{nameref}
 
+\usepackage{hyperref}
+
 %Page header
 \usepackage{fancyhdr}
 \usepackage{fancyhdr} 
@@ -97,9 +99,8 @@
 \begin{center}
  Proseminar \glqq Algorithmen der Bioinformatik\grqq
  \end{center}
-\vspace{4cm}
+\vspace{2cm}
 \begin{center}
-  
  \large\textsc{Ausarbeitung}\\[5mm]
  {\Huge\centering\bfseries\selectfont Textkompression:\\Burrows-Wheeler-Transformation}\\[2cm]
 \begin{center}
@@ -108,11 +109,10 @@
 \end{center}
 \vspace{2cm}
 \end{center}
+\tableofcontents
 \end{titlepage}
-\thispagestyle{empty}\newpage %No page numbering on titlepage
-\tableofcontents\thispagestyle{empty}\newpage 
 \section{Einleitung}
-Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation für die Textkompression und deren Anwendung in der Bioinformatik behandelt werden. Insbesondere wird dabei auf die Bedeutung der Move-To-Front-Kodierung und der Huffman-Kompression eingegangen, da diese Verfahren für 
+Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation (im Folgenden auch BWT genannt) für die Textkompression und deren Anwendung in der Bioinformatik behandelt werden. Insbesondere wird dabei auf die Bedeutung der Move-To-Front-Kodierung und der Huffman-Kompression für die BWT sowie das Laufzeitverhalten von Tree-basierten Algorithmen eingegangen.
 \section{Kompression in der Bioinformatik}
 \subsection{Prinzip der Verlustfreien Kompression}
 In vielen realen Datensätzen sind starke Redundanzen enthalten. Oft ist die Größe des Alphabets nicht sehr groß (z.B. 36 Alphanumerische Zeichen plus Sonderzeichen in englischen Texten oder 4 Nukleinbasen in DNA- oder RNA-Sequenzen) oder Texte sind stark autokorreliert.
@@ -123,19 +123,75 @@ Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große 
 
 Kompressionsalgorithmen bieten die Möglichkeit, die Anzahl der notwendigen Datenträgern zu reduzieren - obwohl für die Kompression und die Dekompression Rechenzeit benötigt wird, ist dennoch oft die Zugriffszeit auf einzelne Datensätze geringer, da die Rechenwerke mitunter schneller dekomprimieren können als die unkomprimierten Daten vom entsprechenden Datenträger gelesen werden können.
 
-Verschiedene Kompressionsalgorithmen sind für verschiedene Typen von Datensätzen bzw. Datenbanken geeignet - insbesondere können schnellere Algorithmen meist besser komprimieren als langsamere Algorithmen.
+Verschiedene Kompressionsalgorithmen sind für verschiedene Typen von Datensätzen bzw. Datenbanken geeignet - insbesondere können schnellere Algorithmen meist besser komprimieren als langsamere Algorithmen. Für jeden Anwendungsfall muss so zwischen den Faktoren Kompressionszeit, Dekompressionszeit und Speicherplatzeinsparung abgewogen werden.
 \subsection{Ein naiver Kompressionsalgorithmus}
 Einer der naivsten denkbaren Kompressionsalgorithmen fasst Runs aufeinanderfolgender gleicher Zeichen zusammen.
 So wird beispielsweise \texttt{AAAAAAAAATTT} zu \texttt{9*A,3*T} zusammengefasst. Sofern der zu komprimierende Datensatz viele und lange solche Runs enthält, erzielt dieser Algorithmus unter Einsatz von sehr wenig Rechenzeit gute Ergebnisse. Allerdings können damit z.B. Mikrosatelliten wie $(AT)_n$ überhaupt nicht komprimiert werden.
 \section{Die Burrows-Wheeler-Transformation}
 Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige\footnote{Durch die Resultate der im Rahmen dieser Arbeit entwickelten Software \texttt{eBWT} kann gezeigt werden, dass insbesondere mit Dictionary-basierten Kompressionsalgorithmen der von der BWT erzeugt Text oft schlechter kompressibel ist als der Originaltext} Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext.
-\subsection{Die Burrows-Wheeler-Vorwärtstransformation}
-\subsection{Die Burrows-Wheeler-Rückwärtstransformation}
-\subsection{Komplexität und Laufzeitverhalten}
-Die Burrows-Wheeler-Transformation hat die asymptotische Komplexität $\mathcal{O}(n^2)$. Die Sortierung während der Transformation nimmt von den Teilschritten des Verfahrens am meisten Rechenzeit in Anspruch - daher hängt das Laufzeitverhalten insbesondere von der Wahl der Sortierungsalgorithmus ab. Burrows und Wheeler stellen in \cite{burrows1994block} einen modifizierten Quicksort-Algorithmus vor, der für den von ihnen verwendeten Calgary-Kompressionstestkorpus das beste Laufzeitverhalten zeigte. Das lässt sich allerdings nicht notwendigerweise auf andere Datensätze, insbesondere nicht auf Bioinformatische Datensätze verallgemeinern.
+\subsection{Die Burrows-Wheeler-Vorwärtstransformation}\label{ssec:transformation}
+Die Vorwärtstransformation wird detailiert in \cite{Heun2003} sowie in \cite[Seite 2 - Algorithmus C]{burrows1994block} beschrieben.
+Gegeben sei der zu transformierende Text \textit{S}. Zuerst wird eine Matrix \te;Oxtit{M} der Größe $|S| \times |S|$ initialisiert.
 
+\textit{M} wird nun mit allen zyklischen Rotationen von \textit{S} gefüllt - die Reihenfolge (und damit die Richtung der Rotation) spielt hierbei keine Rolle.
+
+Nun werden die Zeilen von \textit{M} lexikographisch sortiert. In der sortierten Matrix \textit{M'} wird nun der Originaltext \textit{S} gesucht und dessen Index als \textit{I} gespeichert. Sei \textit{L} nun der Spaltenvektor der letzten Spalte von \textit{M'}. Dann ist das Resultat der Vorwärtstransformation das Tupel $(L, I)$.
+\subsection{Die Burrows-Wheeler-Rückwärtstransformation}
+\label{ssec:backtransformation}
+Die Kompe
+\subsection{Alternatives Verfahren zur Rücktransformation}
+Das Folgende Verfahren ist eine vereinfachte Version der Rücktransformation, die weniger komplex ist als die in Kapitel \vref{ssec:backtransformation} vorgestellt wurde. Da sie einfacher zu erklären ist, wird sie im Vortrag ausführlicher als die ursprüngliche Rücktransformation dargestellt. Detailiert wird diese V riante der Rücktransformation unter \cite{Wik2012-1} dargestellt.
+
+Gegeben sei das Tupel $(L,I)$ - das Resultat der Vorwärtstransformation.
+Durch das Kompressionsverfahren ist bekannt, dass der letzte Spaltenvektor von \textit{M} \textit{L} ist. Zudem wurde M zuvor lexikographisch sortiert, sodass zudem bekannt ist, dass der erste Spaltenvektor von \textit{M} - der durch die Rotation dieselben Zeichen mit derselben Häufigkeit wie \textit{L} enthält - dadurch kann der erste Spaltenvektor von \textit{M} ausgefüllt werden, indem die Zeichen in \textit{L} lexikographisch sortiert werden.
+
+Wir definieren nun die Matrix \textit{M'}, indem wir \textit{M} um ein Zeichen nach links rotieren. Dadurch ist in \textit{M'} lediglich die letzte und die vorletzte Spalte bekannt.\\\newline
+\noindent Im weiteren Verlauf werden die Folgenden Schritte auf \textit{M'} wiederholt, bis \textit{M'} voll ist:
+\begin{enumerate}
+ \item Füllen der freien Spalte mit dem größten Index mit \textit{L}
+ \item Lexikographisches Sortieren der gesamten Matrix \textit{M'}
+\end{enumerate}
+Wenn \textit{M'} voll ist, ist \textit{M'} vollständig äquivalent zu \textit{M}.
+\section{Komprimierbarkeit der transformierten Textes}
+Die Gründe, warum der tranformierte Text in vielen Fällen besser komprimierbar ist als der Originaltext, werden in \cite{burrows1994block} detailiert dargestellt. Weitere Beispiele finden sich auch in \cite{Wik2012-1}.
+
+Betrachten wir Beispielsweise einen englischen Text und die Matrix \textit{M'} aus der Vorwärtstransformation (Siehe auch Kapitel \vref{ssec:transformation}).
+
+Statistisch lässt sich feststellen, dass in englischen Texten einige Kombinationen aus aufeinanderfolgenden Buchstaben häufiger vorkommen als andere, beispielsweise kommt \textit{th} in \textit{the} deutlich öfter vor als \textit{qy}.
+
+Sofern wir nur diejenigen Zeilen in \textit{M'} betrachten, die mit dem zweiten Buchstaben eines häufig vorkommenden Buchstabenpaars beginnen, so wird durch die Rotation und lexikographische Sortierung sichergestellt, dass    in vielen aufeinanderfolgenden Zeilen der erste Buchstabe des Buchstabenpaars in der letzten Zeile steht. Da nun \textit{L} durch den letzten Spaltenvektor definiert ist, werden durch solche Buchstabenpaare lange Runs in L erzeugt. Von entsprechenden Kompressionsalgorithmen können diese Runs ausgenutzt werden.
+
+\subsection{Blockbasierte Kompression}
+Gerade bei großen Datensätzen bedeutet die Sortierung einer $n \times n$-Matrix einen enormen Zeitaufwand, der in vielen Anwendungsfällen nicht akzeptabel ist. Um diesem Problem entgegenzuwirken, wird der Originaltext meist in mehrere Blöcke gleicher Größe aufgeteilt - dadurch wird zwar oft nicht die maximale mögliche Kompression erreicht, da Korrelationen zwischen den Blöcken bei der BWT nicht berücksichtigt werden, aber der Zeitaufwand sinkt je nach Blockgröße enorm.
+
+\subsection{Kombination mit anderen Algorithmen}
+Die im Rahmen dieser Arbeit entwickelte Software \texit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
+
+eBWT implementiert einen Speichereffizienten Rotierungs- und Sortierungsalgorithmus in \texit{C++}, der auf einem modifizierten \textit{Heapsort}-Algorithmus aufbaut, der statt den zu sortierenden Daten nur einen Zeiger  speichert und dadurch eine Speicherkomplexität von $\mathcal(n)$ bezüglich der Blockgröße erreicht.
+
+Auf die Repräsentation des Indizes I aus dem Resultat der Vorwärtstransformation sowie des Dictionaries des Move-To-Front-Encodings wird verzichtet, da die Wahl der Repräsentation große Einflüsse auf die resultierende Dateigröße haben könnte.
+
+Zum Zeitpunkt der Erstellung dieser Ausarbeitung konnte aufgrund hoher Rechenzeiten nur eine kleine Zahl der möglichen Experimente mit eBWT durchgeführt werden. Die Folgenden Resultate wurden bisher erzielt:
+\begin{itemize}
+ \item Mit der BWT transformierte Texte lassen sich mit Dictionary-basierten Algorithmen wie \textit{Deflate} meist schlechter komprimieren als die entsprechenden Originaltexte
+ \item 
+\end{itemize}
+
+
+\subsection{Komplexität und Laufzeitverhalten}
+Die Burrows-Wheeler-Transformation hat die asymptotische Komplexität $\mathcal{O}(n^2)$. Die Sortierung während der Transformation nimmt von den Teilschritten des Verfahrens am meisten Rechenzeit in Anspruch - daher hängt das Laufzeitverhalten insbesondere von der Wahl der Sortierungsalgorithmus ab. Burrows und Wheeler stellen in \cite{burrows1994block} einen modifizierten Quicksort-Algorithmus vor, der für den von ihnen verwendeten Calgary-Kompressionstestkorpus das beste Laufzeitverhalten zeigte. Das lässt sich allerdings nicht notwendigerweise auf andere Datensätze, insbesondere nicht auf Bioinformatische Datensätze, verallgemeinern.
+
+Die meisten Sortieralgorithmen unterscheiden sich insbesondere durch die Average-Case-Komplexität und die Worst-Case-Komplexität. Zudem sind auf Bäumen basierende Algorithmen in den meisten Fällen auf konkreter Hardware\footnote{Beschrieben wird hier aufgrund der hohen Verbreitung im Computing-Bereich insbesondere das Verhalten der x86-Plattform sowie der 64-Bit-Variante x86\_64, die Resultate lassen sich aber in vielen Fällen auf andere Plattformen mit MMU\footnotemark{} verallgemeinern}\footnotetext{Memory Management Unit} langsamer als in der Theorie - das liegt vor allem daran, dass durch der für die einzelnen Knoten und Kanten benötigte Speicherplatz oft aufgrund von Veränderungen an der Baumstruktur oder der mit den Knoten und Kanten assoziierten Informationen neu alloziert werden muss. Dadurch wird aber die Repräsentation des Baums im Arbeitsspeicher fragmentiert. CPUs können aber nicht direkt auf den Arbeitsspeicher zugreifen, sondern müssen kleinere Einheiten - sogenannte \textit{Pages}\footnote{Meist 4096 Bytes groß auf Linux x86\_64-Systemen} - zuerst in einen CPU-nahen mehrstufigen, aber insgesamt nur wenige Megabyte großen Cache laden. Sofern auf eine Page zugegriffen werden soll, die sich nicht im Cache befindet, wird ein sogenannter \textit{page fault} ausgelöst und die Page aus dem Arbeitsspeicher in den Cache geladen. Dieser Prozess dauert allerdings im Vergleich zu Rechenoperationen sehr lange und verzögert daher den Programmablauf.
+
+Aufgrund der Fragmentierung der Repräsentation von Bäumen im Speicher ist die Wahrscheinlichkeit groß, dass bei einem gegebenen Algorithmus zwei Knoten oder Kanten des Baums, auf die nacheinander zugegriffen wird, in zwei verschiedenen Pages liegen. Unter Umständen befindet sich diese Page aber nicht mehr im Cache und muss daher aus dem Arbeitsspeicher geladen werden. 
+
+Aufgrund dieses Effektes sind Baumbasierte Sortieralgorithmen auch für die Burrows-Wheeler-Transformation nicht immer die beste Wahl, selbst wenn ihre theoretische Komplexität für eine definierte Menge an Datensätzen ein besseres Laufzeitverhalten nahelegt. In der Praxis müssen oft verschiedene Algorithmen getestet werden, um den zu finden, der für die zu transformierenden Daten das beste Laufzeitverhalten zeigt.
+
+Einen detailierteren Einblick in diese Thematik bietet \cite{Drepper2007}.
 
 \renewcommand\refname{Literatur- und Quellenverzeichnis}
 \bibliographystyle{alphadin}
 \bibliography{library}
+\subsection*{Open Data}\label{opendata}
+Alle für die Erstellung dieser Ausarbeitung sowie für die Präsentation verwendeten Quelldateien und Rohdaten können dauerhaft unter \url{https://github.com/ulikoehler/Proseminar} abgerufen werden
 \end{document}
