@@ -131,7 +131,7 @@ So wird beispielsweise \texttt{AAAAAAAAATTT} zu \texttt{9*A,3*T} zusammengefasst
 Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige\footnote{Durch die Resultate der im Rahmen dieser Arbeit entwickelten Software \texttt{eBWT} kann gezeigt werden, dass insbesondere mit Dictionary-basierten Kompressionsalgorithmen der von der BWT erzeugt Text oft schlechter kompressibel ist als der Originaltext} Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext.
 \subsection{Die Burrows-Wheeler-Vorwärtstransformation}\label{ssec:transformation}
 Die Vorwärtstransformation wird detailiert in \cite{Heun2003} sowie in \cite[Seite 2 - Algorithmus C]{burrows1994block} beschrieben.
-Gegeben sei der zu transformierende Text \textit{S}. Zuerst wird eine Matrix \te;Oxtit{M} der Größe $|S| \times |S|$ initialisiert.
+Gegeben sei der zu transformierende Text \textit{S}. Zuerst wird eine Matrix \textit{M} der Größe $|S| \times |S|$ initialisiert.
 
 \textit{M} wird nun mit allen zyklischen Rotationen von \textit{S} gefüllt - die Reihenfolge (und damit die Richtung der Rotation) spielt hierbei keine Rolle.
 
@@ -165,19 +165,23 @@ Sofern wir nur diejenigen Zeilen in \textit{M'} betrachten, die mit dem zweiten 
 Gerade bei großen Datensätzen bedeutet die Sortierung einer $n \times n$-Matrix einen enormen Zeitaufwand, der in vielen Anwendungsfällen nicht akzeptabel ist. Um diesem Problem entgegenzuwirken, wird der Originaltext meist in mehrere Blöcke gleicher Größe aufgeteilt - dadurch wird zwar oft nicht die maximale mögliche Kompression erreicht, da Korrelationen zwischen den Blöcken bei der BWT nicht berücksichtigt werden, aber der Zeitaufwand sinkt je nach Blockgröße enorm.
 
 \subsection{Kombination mit anderen Algorithmen}
-Die im Rahmen dieser Arbeit entwickelte Software \texit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
+Die im Rahmen dieser Arbeit entwickelte Software \textit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
 
-eBWT implementiert einen Speichereffizienten Rotierungs- und Sortierungsalgorithmus in \texit{C++}, der auf einem modifizierten \textit{Heapsort}-Algorithmus aufbaut, der statt den zu sortierenden Daten nur einen Zeiger  speichert und dadurch eine Speicherkomplexität von $\mathcal(n)$ bezüglich der Blockgröße erreicht.
+eBWT implementiert einen Speichereffizienten Rotierungs- und Sortierungsalgorithmus in \textit{C++}, der auf einem modifizierten \textit{Heapsort}-Algorithmus aufbaut, der statt den zu sortierenden Daten nur einen Zeiger  speichert und dadurch eine Speicherkomplexität von $\mathcal(n)$ bezüglich der Blockgröße erreicht.
 
 Auf die Repräsentation des Indizes I aus dem Resultat der Vorwärtstransformation sowie des Dictionaries des Move-To-Front-Encodings wird verzichtet, da die Wahl der Repräsentation große Einflüsse auf die resultierende Dateigröße haben könnte.
 
-Zum Zeitpunkt der Erstellung dieser Ausarbeitung konnte aufgrund hoher Rechenzeiten nur eine kleine Zahl der möglichen Experimente mit eBWT durchgeführt werden. Die Folgenden Resultate wurden bisher erzielt:
+Untersucht wurde insbesondere die Frage, inwiefern die Kombination der BWT mit den in \cite{burrows1994block} vorgeschlagenen Algorithmen \textit{Move-To-Front-Encoding} (MTF) und \textit{Huffman-Kodierung} zur Erreichung einer hohen Speicherplatzeinsparung notwendig ist.
+
+Zum Zeitpunkt der Erstellung dieser Ausarbeitung konnte aufgrund hoher Entwicklungs- und Rechenzeiten nur eine kleine Zahl der möglichen Experimente mit eBWT durchgeführt werden. Die Folgenden Resultate wurden bisher erzielt:
 \begin{itemize}
  \item Mit der BWT transformierte Texte lassen sich mit Dictionary-basierten Algorithmen wie \textit{Deflate} meist schlechter komprimieren als die entsprechenden Originaltexte
- \item 
+ \item Übereinstimmend mit den Resultaten in \cite{burrows1994block} wurde festgestellt, dass unter jeder möglichen Kombination von BWT, MTF und Huffman-Kodierung unabhängig von der Blöckgröße die Kombination BWT \textrightarrow MTF \textrightarrow Huffman-Codierung die kleinsten Dateien erzeugt
+ \item Die Kombination von MTF und Huffman-Kodierung (ohne BWT) erzeugt beim Bioinformatik-Testdatensatz eine deutlich bessere Kompression als beim englischen Text
+ \item Eine Vergrößerung der Blockgröße über etwa 1e+5 hinaus hat nur einen sehr kleinen Effekt, beim Bioinformatik-Datensatz ist dieser Effekt allerdings größer als beim englischen Datensatz
+ \item Beim Bioinformatik-Datensatz ist der Effekt einer Vergrößerung der Blockgröße auf die resultierende Dateigröße im Allgemeinen deutlich kleiner als beim englischen Text.
 \end{itemize}
-
-
+Insgesamt legen diese Resultate nahe, dass signifikante Unterschiede zwischen dem englischen Text und dem Bioinformatik-Datensatz bestehen. Die Resultate aus nicht-bioinformatikbezogenen Publikationen müssen daher im Bezug auf Bioinformatik-Datesätze mit Vorsicht betrachtet werden.
 \subsection{Komplexität und Laufzeitverhalten}
 Die Burrows-Wheeler-Transformation hat die asymptotische Komplexität $\mathcal{O}(n^2)$. Die Sortierung während der Transformation nimmt von den Teilschritten des Verfahrens am meisten Rechenzeit in Anspruch - daher hängt das Laufzeitverhalten insbesondere von der Wahl der Sortierungsalgorithmus ab. Burrows und Wheeler stellen in \cite{burrows1994block} einen modifizierten Quicksort-Algorithmus vor, der für den von ihnen verwendeten Calgary-Kompressionstestkorpus das beste Laufzeitverhalten zeigte. Das lässt sich allerdings nicht notwendigerweise auf andere Datensätze, insbesondere nicht auf Bioinformatische Datensätze, verallgemeinern.
 
