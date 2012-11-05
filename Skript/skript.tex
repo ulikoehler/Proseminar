@@ -115,12 +115,12 @@
 Im Vorliegenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation (im Folgenden auch BWT genannt) für die Textkompression und deren Anwendung in der Bioinformatik behandelt werden.
 
 Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große Datenmengen. Um die Rohdaten speichern zu können, müssen spezielle Kompressionsalgorithmen angewandt werden, um den benötigten Speicherplatz auf ein Minimum zu reduzieren.
-\section{Kompression in der Bioinformatik}
-\subsection{Verlustfreie Kompression} \label{ssec:bigdata-bioinformatics}
+\section{Verlustfreie Kompression}
+\subsection{ Kompression} \label{ssec:bigdata-bioinformatics}
 In vielen realen Datensätzen sind starke Redundanzen enthalten. Oft ist die Größe des Alphabets nicht sehr groß (z.B. 36 Alphanumerische Zeichen plus Sonderzeichen in englischen Texten oder 4 Nukleinbasen in DNA- oder RNA-Sequenzen) oder Texte sind stark autokorreliert.
 
 Kompressionsalgorithmen sind Verfahren, die diese Redundanzen eliminieren und dadurch eine platzsparende Speicherung der Daten erlauben, wärend die ursprünglichen unkomprimierten Daten jederzeit vollständig rekonstruiert werden können.
-
+Dadurch unterscheiden sich verlustfreie Algorithmen von verlustbehafteten Verfahren, die zwar eine oft deutlich größere Platzeinsparung erzeugen, aber dafür keine vollständige Rekonstruktion erlauben.
 Verschiedene Kompressionsalgorithmen sind für verschiedene Typen von Datensätzen und Datenbanken geeignet - insbesondere können schnellere Algorithmen meist besser komprimieren als langsamere Algorithmen. Für jeden Anwendungsfall muss so zwischen den Faktoren Kompressionszeit, Dekompressionszeit und Speicherplatzeinsparung abgewogen werden.
 \section{Die Burrows-Wheeler-Transformation}
 Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige\footnote{Durch die Resultate der im Rahmen dieser Arbeit entwickelten Software \texttt{eBWT} kann gezeigt werden, dass insbesondere mit Dictionary-basierten Kompressionsalgorithmen der von der BWT erzeugt Text oft schlechter kompressibel ist als der Originaltext} Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext.
@@ -165,7 +165,7 @@ Sofern wir nur diejenigen Zeilen in $M'$ betrachten, die mit dem zweiten Buchsta
 Gerade bei großen Datensätzen bedeutet die Sortierung einer $n \times n$-Matrix einen enormen Zeitaufwand, der in vielen Anwendungsfällen nicht akzeptabel ist. Um diesem Problem entgegenzuwirken, wird der Originaltext meist in mehrere Blöcke gleicher Größe aufgeteilt - dadurch wird zwar oft nicht die maximale mögliche Kompression erreicht, da Korrelationen zwischen den Blöcken bei der BWT nicht berücksichtigt werden, der Zeitaufwand aber sinkt bei kleinerer Blockgröße enorm.
 
 \subsection{Kombination mit anderen Algorithmen}
-Die im Rahmen dieser Arbeit entwickelte Software \textit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
+Die im Rahmen dieser Arbeit entwickelte Software \textit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei, Quelle: \url{ftp://hgdownload.cse.ucsc.edu/goldenPath/ce6/chromosomes/}} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
 
 eBWT implementiert einen Speichereffizienten Rotierungs- und Sortierungsalgorithmus in C++11, der auf einem modifizierten \textit{Heapsort}-Algorithmus aufbaut. Dieser speichert statt den zu sortierenden Strings nur einen Zeiger und erzielt dadurch eine Speicherkomplexität von $\mathcal{O}(n)$ bezüglich der Blockgröße.
 
