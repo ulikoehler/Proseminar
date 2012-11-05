@@ -104,8 +104,8 @@
  \large\textsc{Ausarbeitung}\\[5mm]
  {\Huge\centering\bfseries\selectfont Textkompression:\\Burrows-Wheeler-Transformation}\\[2cm]
 \begin{center}
-  Von Uli Köhler\\
-  5.11.2012
+  Uli Köhler\\
+  12.11.2012
 \end{center}
 \vspace{2cm}
 \end{center}
@@ -118,7 +118,7 @@ Im Folgenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation (im 
 In vielen realen Datensätzen sind starke Redundanzen enthalten. Oft ist die Größe des Alphabets nicht sehr groß (z.B. 36 Alphanumerische Zeichen plus Sonderzeichen in englischen Texten oder 4 Nukleinbasen in DNA- oder RNA-Sequenzen) oder Texte sind stark autokorreliert.
 
 Kompressionsalgorithmen sind Verfahren, die diese Redundanzen eliminieren und dadurch eine platzsparende Speicherung der Daten erlauben, wärend die ursprünglichen unkomprimierten Daten jederzeit vollständig rekonstruiert werden können.
-\subsection{Große Datenmengen in der Bioinformatik}
+\subsection{Große Datenmengen in der Bioinformatik}\label{ssec:bigdata-bioinformatics}
 Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große Datenmengen. Sofern die Rohdaten, die vom jeweiligen Sequenzierverfahren erzeugt wurden, persistent gespeichert werden sollen, muss eine große Menge an Datenträgern mit großer Speicherkapazität zur Verfügung gestellt werden, durch die die Projektkosten stark ansteigen.
 
 Kompressionsalgorithmen bieten die Möglichkeit, die Anzahl der notwendigen Datenträgern zu reduzieren - obwohl für die Kompression und die Dekompression Rechenzeit benötigt wird, ist dennoch oft die Zugriffszeit auf einzelne Datensätze geringer, da die Rechenwerke mitunter schneller dekomprimieren können als die unkomprimierten Daten vom entsprechenden Datenträger gelesen werden können.
@@ -182,17 +182,21 @@ Zum Zeitpunkt der Erstellung dieser Ausarbeitung konnte aufgrund hoher Entwicklu
  \item Beim Bioinformatik-Datensatz ist der Effekt einer Vergrößerung der Blockgröße auf die resultierende Dateigröße im Allgemeinen deutlich kleiner als beim englischen Text.
 \end{itemize}
 Insgesamt legen diese Resultate nahe, dass signifikante Unterschiede zwischen dem englischen Text und dem Bioinformatik-Datensatz bestehen. Die Resultate aus nicht-bioinformatikbezogenen Publikationen müssen daher im Bezug auf Bioinformatik-Datesätze mit Vorsicht betrachtet werden.
-\subsection{Komplexität und Laufzeitverhalten}
+\subsection{Komplexität und Laufzeitverhalten}\label{ssec:complexity}
 Die Burrows-Wheeler-Transformation hat die asymptotische Komplexität $\mathcal{O}(n^2)$. Die Sortierung während der Transformation nimmt von den Teilschritten des Verfahrens am meisten Rechenzeit in Anspruch - daher hängt das Laufzeitverhalten insbesondere von der Wahl der Sortierungsalgorithmus ab. Burrows und Wheeler stellen in \cite{burrows1994block} einen modifizierten Quicksort-Algorithmus vor, der für den von ihnen verwendeten Calgary-Kompressionstestkorpus das beste Laufzeitverhalten zeigte. Das lässt sich allerdings nicht notwendigerweise auf andere Datensätze, insbesondere nicht auf Bioinformatische Datensätze, verallgemeinern.
+Die meisten Sortieralgorithmen unterscheiden sich insbesondere durch die Average-Case-Komplexität und die Worst-Case-Komplexität. Zudem sind auf Bäumen basierende Algorithmen in den meisten Fällen auf konkreter Hardware langsamer als in der Theorie - das liegt vor allem daran, dass durch der für die einzelnen Knoten und Kanten benötigte Speicherplatz oft aufgrund von Veränderungen an der Baumstruktur oder der mit den Knoten und Kanten assoziierten Informationen neu alloziert werden muss. Dadurch wird aber die Repräsentation des Baums im Arbeitsspeicher fragmentiert.
 
-Die meisten Sortieralgorithmen unterscheiden sich insbesondere durch die Average-Case-Komplexität und die Worst-Case-Komplexität. Zudem sind auf Bäumen basierende Algorithmen in den meisten Fällen auf konkreter Hardware\footnote{Beschrieben wird hier aufgrund der hohen Verbreitung im Computing-Bereich insbesondere das Verhalten der x86-Plattform sowie der 64-Bit-Variante x86\_64, die Resultate lassen sich aber in vielen Fällen auf andere Plattformen mit MMU\footnotemark{} verallgemeinern}\footnotetext{Memory Management Unit} langsamer als in der Theorie - das liegt vor allem daran, dass durch der für die einzelnen Knoten und Kanten benötigte Speicherplatz oft aufgrund von Veränderungen an der Baumstruktur oder der mit den Knoten und Kanten assoziierten Informationen neu alloziert werden muss. Dadurch wird aber die Repräsentation des Baums im Arbeitsspeicher fragmentiert. CPUs können aber nicht direkt auf den Arbeitsspeicher zugreifen, sondern müssen kleinere Einheiten - sogenannte \textit{Pages}\footnote{Meist 4096 Bytes groß auf Linux x86\_64-Systemen} - zuerst in einen CPU-nahen mehrstufigen, aber insgesamt nur wenige Megabyte großen Cache laden. Sofern auf eine Page zugegriffen werden soll, die sich nicht im Cache befindet, wird ein sogenannter \textit{page fault} ausgelöst und die Page aus dem Arbeitsspeicher in den Cache geladen. Dieser Prozess dauert allerdings im Vergleich zu Rechenoperationen sehr lange und verzögert daher den Programmablauf.
+CPUs können aber nicht direkt auf den Arbeitsspeicher zugreifen, sondern müssen kleinere Einheiten - sogenannte \textit{Pages}\footnote{Meist 4096 Bytes groß auf Linux x86\_64-Systemen} - zuerst in einen CPU-nahen mehrstufigen, aber insgesamt nur wenige Megabyte großen Cache laden. Sofern auf eine Page zugegriffen werden soll, die sich nicht im Cache befindet, wird ein sogenannter \textit{page fault} ausgelöst und die Page aus dem Arbeitsspeicher in den Cache geladen. Dieser Prozess dauert allerdings im Vergleich zu Rechenoperationen sehr lange und verzögert daher den Programmablauf.
 
 Aufgrund der Fragmentierung der Repräsentation von Bäumen im Speicher ist die Wahrscheinlichkeit groß, dass bei einem gegebenen Algorithmus zwei Knoten oder Kanten des Baums, auf die nacheinander zugegriffen wird, in zwei verschiedenen Pages liegen. Unter Umständen befindet sich diese Page aber nicht mehr im Cache und muss daher aus dem Arbeitsspeicher geladen werden. 
 
 Aufgrund dieses Effektes sind Baumbasierte Sortieralgorithmen auch für die Burrows-Wheeler-Transformation nicht immer die beste Wahl, selbst wenn ihre theoretische Komplexität für eine definierte Menge an Datensätzen ein besseres Laufzeitverhalten nahelegt. In der Praxis müssen oft verschiedene Algorithmen getestet werden, um den zu finden, der für die zu transformierenden Daten das beste Laufzeitverhalten zeigt.
 
 Einen detailierteren Einblick in diese Thematik bietet \cite{Drepper2007}.
+\subsection{Resultate von Cox und Bauer}
+In \cite{cox2012large} wird eine Anwendung einer modifizierten Version der BWT (BWT-SAP) auf eine Datenbank von DNA-Sequenzen beschrieben.
 
+Insbesondere wird die BWT-SAP benutzt, um die Redundanzen die durch Sequenzierverfahren entstehen, zu verringern (Siehe auch \vref{ssec:bigdata-bioinformatics}). Cox und Bauer benutzen dafür eine auf Suffix-Trees basierende Präprozessierung der Datenbank, wenden darauf die BWT und darauf einen Kompressionsalgorithmus wie \textit{PPMd} an - Dadurch kann die Datenbank mit nur 1.21 Bits pro Base gespeichert werden.
 \renewcommand\refname{Literatur- und Quellenverzeichnis}
 \bibliographystyle{alphadin}
 \bibliography{library}
