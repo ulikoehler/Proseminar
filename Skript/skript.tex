@@ -4,7 +4,7 @@
 \usepackage[paper=a4paper,includefoot,includehead,left=20mm,right=20mm,top=20mm,bottom=20mm]{geometry}
 \usepackage[pdftex]{graphicx}
 \usepackage[ngerman]{babel}
-%\usepackage[%colorlinks=true,
+%\usepackage[colorlinks=true,
 	    %linkcolor=red,
 	    %anchorcolor=black,
 	    %citecolor=green,
@@ -13,8 +13,6 @@
 	    %]
 	    %{hyperref}
 \usepackage{nameref}
-
-\usepackage{hyperref}
 
 %Page header
 \usepackage{fancyhdr}
@@ -82,6 +80,7 @@
 %Scriptsized, vertically and horizontally centered tabular column type
 \newcolumntype{s}[1]{>{\scriptsize\centering\arraybackslash}m{#1}}
 
+
 \title{3D-Tumorvisualisation}
 \subtitle{Seminararbeit}
 \author{Uli Köhler}
@@ -116,16 +115,16 @@ Im Vorliegenden Dokument soll die Bedeutung der Burrows-Wheeler-Transformation (
 
 Moderne Sequenzierverfahren erzeugen durch Vielfachabdeckung von Genomen große Datenmengen. Um die Rohdaten speichern zu können, müssen spezielle Kompressionsalgorithmen angewandt werden, um den benötigten Speicherplatz auf ein Minimum zu reduzieren.
 \section{Verlustfreie Kompression}
-\subsection{ Kompression} \label{ssec:bigdata-bioinformatics}
+\label{ssec:bigdata-bioinformatics}
 In vielen realen Datensätzen sind starke Redundanzen enthalten. Oft ist die Größe des Alphabets nicht sehr groß (z.B. 36 Alphanumerische Zeichen plus Sonderzeichen in englischen Texten oder 4 Nukleinbasen in DNA- oder RNA-Sequenzen) oder Texte sind stark autokorreliert.
 
 Kompressionsalgorithmen sind Verfahren, die diese Redundanzen eliminieren und dadurch eine platzsparende Speicherung der Daten erlauben, wärend die ursprünglichen unkomprimierten Daten jederzeit vollständig rekonstruiert werden können.
 Dadurch unterscheiden sich verlustfreie Algorithmen von verlustbehafteten Verfahren, die zwar eine oft deutlich größere Platzeinsparung erzeugen, aber dafür keine vollständige Rekonstruktion erlauben.
 Verschiedene Kompressionsalgorithmen sind für verschiedene Typen von Datensätzen und Datenbanken geeignet - insbesondere können schnellere Algorithmen meist besser komprimieren als langsamere Algorithmen. Für jeden Anwendungsfall muss so zwischen den Faktoren Kompressionszeit, Dekompressionszeit und Speicherplatzeinsparung abgewogen werden.
 \section{Die Burrows-Wheeler-Transformation}
-Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige\footnote{Durch die Resultate der im Rahmen dieser Arbeit entwickelten Software \texttt{eBWT} kann gezeigt werden, dass insbesondere mit Dictionary-basierten Kompressionsalgorithmen der von der BWT erzeugt Text oft schlechter kompressibel ist als der Originaltext} Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext.
+Die Burrows-Wheeler-Transformation ist selbst kein Kompressionsalgorithmus, sondern ein Verfahren, um einen Text reversibel so zu verändern, dass er sich durch einige Kompressionsalgorithmen deutlich besser komprimieren lässt als der Originaltext (Siehe auch Kapitel \vref{ssec:ebwt})
 \subsection{Die Burrows-Wheeler-Hintransformation}\label{ssec:transformation}
-Die Hintransformation wird detailiert in \cite{Heun2003} sowie in \cite[Seite 2 - Algorithmus C]{burrows1994block} beschrieben.
+Die Hintransformation wird detailiert in \cite[Abschnitt 6.5]{Heun2003} sowie in \cite[Seite 2 - Algorithmus C]{burrows1994block} beschrieben.
 Gegeben sei der zu transformierende Text \textit{S}. Zuerst wird eine Matrix $M$ der Größe $|S| \times |S|$ initialisiert.
 
 $M$ wird nun mit allen zyklischen Rotationen von \textit{S} gefüllt - die Reihenfolge (und damit die Richtung der Rotation) spielt hierbei keine Rolle.
@@ -133,10 +132,11 @@ $M$ wird nun mit allen zyklischen Rotationen von \textit{S} gefüllt - die Reihe
 Nun werden die Zeilen von $M$ lexikographisch sortiert. In der sortierten Matrix $M_S$ wird nun der Originaltext \textit{S} gesucht und dessen Index als \textit{I} gespeichert. Sei $L$ nun der Spaltenvektor der letzten Spalte von $M_S$. Dann ist das Resultat der Hintransformation das Tupel $(L, I)$.
 \subsection{Die Burrows-Wheeler-Rücktransformation}
 \label{ssec:backtransformation}
-Die Rücktransformation wird detailiert in \cite[Seite 3-5, Algorithmus D]{burrows1994block} sowie \cite{Heun2003} beschrieben.
+Die Rücktransformation wird detailiert in \cite[Seite 3-5, Algorithmus D]{burrows1994block} sowie \cite[Abschnitt 6.5]{Heun2003} beschrieben.
 Ausgehend von $M_S$ wird die Matrix $M_S'$ als Rotation von $M_S$ um ein Zeichen nach rechts definiert. Da $M_S$ ausschließlich Rotationen von $S$ enthält, enthält auch $M_S'$ Rotationen. Der Vektor $T$ der Dimension $|S|$ wird nun als Korrelation von $M_S$ zu $M_S'$ wie Folgt berechnet:\\
 \textit{Für jede Zeile $Z_i$ von $M_S'$ suche in $M_S$ die Zeile $Z_j$, die zu $Z_i$ äquivalent ist und setze $T_i = j$}
-Durch die Konstruktion ist bekannt, dass für alle $0 \leq j \leq |S|-1$ gilt: $L_j$ ist $S$ der direkte zyklische Nachfolger von $L_{T_j}$
+Durch die Konstruktion ist bekannt, dass für alle $0 \leq j \leq |S|-1$ gilt: $L_j$ ist $S$ der direkte zyklische Nachfolger von $L_{T_j}$.
+
 Sei nun $T^i$ wie Folgt definiert: ${T^0}_x = x\ ;\ {T^{i+1}}_x = T_{{T^i}_x}$
 Dann kann $S$ wie Folgt rekonstrukiert werden: \textit{Für alle $0 \leq i \leq |S|$ gilt: $S_{N-1-i} = L_{{T^i}_I}$}
 \subsection{Vereinfachtes Verfahren zur Rücktransformation}
@@ -152,7 +152,7 @@ Wir definieren nun die Matrix $M'$, indem wir $M$ um ein Zeichen nach links roti
  \item Lexikographisches Sortieren der gesamten Matrix $M'$
 \end{enumerate}
 Wenn $M'$ voll ist, ist $M'$ vollständig äquivalent zu $M$.
-\section{Komprimierbarkeit der transformierten Textes}
+\subsection{Komprimierbarkeit der transformierten Textes}
 Die Gründe, warum der tranformierte Text in vielen Fällen besser komprimierbar ist als der Originaltext, werden in \cite{burrows1994block} detailiert dargestellt. Weitere Beispiele finden sich auch in \cite{Wik2012-1}.
 
 Betrachten wir Beispielsweise einen englischen Text und die Matrix $M'$ aus der Hintransformation (Siehe auch Kapitel \vref{ssec:transformation}).
@@ -164,7 +164,7 @@ Sofern wir nur diejenigen Zeilen in $M'$ betrachten, die mit dem zweiten Buchsta
 \subsection{Blockbasierte Kompression}
 Gerade bei großen Datensätzen bedeutet die Sortierung einer $n \times n$-Matrix einen enormen Zeitaufwand, der in vielen Anwendungsfällen nicht akzeptabel ist. Um diesem Problem entgegenzuwirken, wird der Originaltext meist in mehrere Blöcke gleicher Größe aufgeteilt - dadurch wird zwar oft nicht die maximale mögliche Kompression erreicht, da Korrelationen zwischen den Blöcken bei der BWT nicht berücksichtigt werden, der Zeitaufwand aber sinkt bei kleinerer Blockgröße enorm.
 
-\subsection{Kombination mit anderen Algorithmen}
+\subsection{Kombination mit anderen Algorithmen}\label{ssec:ebwt}
 Die im Rahmen dieser Arbeit entwickelte Software \textit{eBWT}\footnote{extreme BWT} führt auf einen Bioinformatik-Datensatz\footnote{Chromosom III von \textit{C. Elegans} als FASTA-Datei, Quelle: \url{ftp://hgdownload.cse.ucsc.edu/goldenPath/ce6/chromosomes/}} und den \textit{Fictional Text} aus dem Calgary-Kompressionstestkorpus verschiedene Kombinationen von Algorithmen aus und prüft für verschiedene Blockgrößen die Größe der resultierenden Dateien.
 
 eBWT implementiert einen Speichereffizienten Rotierungs- und Sortierungsalgorithmus in C++11, der auf einem modifizierten \textit{Heapsort}-Algorithmus aufbaut. Dieser speichert statt den zu sortierenden Strings nur einen Zeiger und erzielt dadurch eine Speicherkomplexität von $\mathcal{O}(n)$ bezüglich der Blockgröße.
@@ -200,9 +200,9 @@ Einen detailierteren Einblick in diese Thematik bietet \cite{Drepper2007}.
 \subsection{Resultate von Cox und Bauer}
 In \cite{cox2012large} wird eine Anwendung einer modifizierten Version der BWT (\textit{\glqq BWT-SAP\grqq}) auf eine Datenbank von DNA-Sequenzen beschrieben.
 
-Insbesondere wird die BWT-SAP benutzt, um die durch die durch die starke Korrelation sich überlappender Sequenzen entstehende Redundanz zu verringern (Siehe auch \vref{ssec:bigdata-bioinformatics}).
+Insbesondere wird die BWT-SAP benutzt, um die durch die durch die starke Korrelation sich überlappender Sequenzen entstehende Redundanz zu verringern (Siehe auch Kapitel \vref{ssec:bigdata-bioinformatics}).
 
-Cox und Bauer benutzen dafür eine auf \textit{Suffix Arrays} basierende Methode, um große Datenmengen effizient komprimieren zu können. Dadurch treffen die unter \vref{ssec:complexity} beschriebenen Nachteile von Baumbasierten Algorithmen nciht zu.
+Cox und Bauer benutzen dafür eine auf \textit{Suffix Arrays} basierende Methode, um große Datenmengen effizient komprimieren zu können. Dadurch treffen die in Kapitel \vref{ssec:complexity} beschriebenen Nachteile von Baumbasierten Algorithmen nciht zu.
 \section{Zusammenfassung}
 Im Kontext einer allgemeinen Einführung über die Prinzipien verlustfreier Kompression wurde auf die Burrows-Wheeler-Transformation - ein Algorithmus, um Texte besser komprimierbar zu machen - eingegangen.
 
