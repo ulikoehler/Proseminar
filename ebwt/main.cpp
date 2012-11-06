@@ -328,6 +328,7 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
 int main(int argc, char** argv) {
     if (argc < 2) {
         cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
+	cout << "Set the KEEP_RAW_FILES environment variable to keep all generated files" << endl;
         return 1;
     }
     //Parse the args
