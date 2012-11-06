@@ -238,7 +238,7 @@ enum CompressMode {
 /**
  * Thread ftor to compress a single file using a native binary
  */
-void compressFile(CompressMode mode, size_t& filesize, const string& input, const string& output, const string& binPath) {
+void compressFile(CompressMode mode, size_t& filesize, const string& input, const string& output) {
     if (mode == HUFFCODE) {
         string cmd = (boost::format("%3% -i %1% -o %2%") % input % output % huffcodePath).str();
         int ret = system(cmd.c_str());
