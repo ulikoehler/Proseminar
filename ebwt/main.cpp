@@ -27,6 +27,7 @@ using boost::thread;
 
 //Configs
 const string huffcodePath = "/home/k/koehleru/bin/huffcode";
+const string lzopPath = "/home/k/koehleru/bin/lzop";
 bool deleteRawFiles = true;
 
 typedef boost::thread* ThreadPtr;
@@ -239,10 +240,10 @@ enum CompressMode {
  */
 void compressFile(CompressMode mode, size_t& filesize, const string& input, const string& output, const string& binPath) {
     if (mode == HUFFCODE) {
-        string cmd = (boost::format("%3% -i %1% -o %2%") % input % output % binPath).str();
+        string cmd = (boost::format("%3% -i %1% -o %2%") % input % output % huffcodePath).str();
         int ret = system(cmd.c_str());
     } else if (mode == LZOP) {
-        string cmd = (boost::format("%3% %1% -o %2%") % input % output % binPath).str();
+        string cmd = (boost::format("%2% %1%") % input % lzopPath).str();
         int ret = system(cmd.c_str());
     }
     filesize = getFilesizeInBytes(output.c_str());
@@ -274,18 +275,27 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     string mtfHuffmanFilename = (boost::format("%3%%1%.%2%.mtf.huff") % infilename % blocksize % outdir).str();
     //Start each compressor in a separate thread
     //overhead should be acceptable when compared to performance gain
-    const int numThreads = 3;
+    const int numThreads = 6;
     ThreadPtr compressThreads[numThreads];
     size_t bwtHuffmanSize = 0;
     size_t bwtMtfHuffmanSize = 0;
     size_t mtfHuffmanSize = 0;
-    compressThreads[0] = new thread([&](){compressFile(HUFFCODE, bwtHuffmanSize, outfileBWTOnly, btwHuffmanFilename, huffcodePath);});
-    compressThreads[1] = new thread([&](){compressFile(HUFFCODE, bwtMtfHuffmanSize, outfileBWTMTF, btwMtfHuffmanFilename, huffcodePath);});
-    compressThreads[2] = new thread([&](){compressFile(HUFFCODE, mtfHuffmanSize, outfileMTFOnly, mtfHuffmanFilename, huffcodePath);});
-    //string compressBWTCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTOnly % btwOnlyCompressedFilename % huffcodePath).str();
-    //string compressBWTMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileBWTMTF % btwMtfCompressedFilename % huffcodePath).str();
-    //string compressMTFCmd = (boost::format("%3% -i %1% -o %2%") % outfileMTFOnly % mtfOnlyCompressedFilename % huffcodePath).str();
-    //Join the threads
+    size_t bwtLZOSize = 0;
+    size_t bwtMtfLZOSize = 0;
+    size_t mtfLZOSize = 0;
+    //Start the huffcode threads
+    compressThreads[0] = new thread([&](){compressFile(HUFFCODE, bwtHuffmanSize, outfileBWTOnly, btwHuffmanFilename);});
+    compressThreads[1] = new thread([&](){compressFile(HUFFCODE, bwtMtfHuffmanSize, outfileBWTMTF, btwMtfHuffmanFilename);});
+    compressThreads[2] = new thread([&](){compressFile(HUFFCODE, mtfHuffmanSize, outfileMTFOnly, mtfHuffmanFilename);});
+    //Start the LZO threads
+    compressThreads[3] = new thread([&](){compressFile(LZOP, bwtLZOSize, outfileBWTOnly, btwHuffmanFilename);});
+    compressThreads[4] = new thread([&](){compressFile(LZOP, bwtMtfLZOSize, outfileBWTMTF, btwMtfHuffmanFilename);});
+    compressThreads[5] = new thread([&](){compressFile(LZOP, mtfLZOSize, outfileMTFOnly, mtfHuffmanFilename);});
+    //While the other threads are running, get the remaining filesizes 
+    //Uncompressed files
+    size_t bwtMtfSize = getFilesizeInBytes(outfileBWTMTF.c_str());
+    size_t mtfOnlySize = getFilesizeInBytes(outfileMTFOnly.c_str());
+     //Join the threads
     for (int i = 0; i < numThreads; i++) {
         compressThreads[i]->join();
         delete compressThreads[i];
@@ -293,21 +303,17 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     //
     // Evaluate the resulting filesizes
     //
-    //Uncompressed files
-    size_t bwtMtfSize = getFilesizeInBytes(outfileBWTMTF.c_str());
-    size_t mtfOnlySize = getFilesizeInBytes(outfileMTFOnly.c_str());
-    //Compressed files
-    //size_t bwtCompressedSize = getFilesizeInBytes(btwOnlyCompressedFilename.c_str()); //BWT+Huff
-    //size_t bwtMtfCompressedSize = getFilesizeInBytes(btwMtfCompressedFilename.c_str()); //BWT+MTF+Huff
-    //size_t mtfOnlyCompressedSize = getFilesizeInBytes(mtfOnlyCompressedFilename.c_str()); //MTF+Huff
-    //R
+    //R-compatible output
     statsOut
             << blocksize << ',' << "Huffman" << ',' << huffSize << '\n'
             << blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
             << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
             << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize << '\n'
             << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize << '\n'
-            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize << endl;
+            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize
+            << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize
+            << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize
+            << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize << endl;
     //Remove the raw files if option is enabled
     if (deleteRawFiles) {
         remove(outfileBWTOnly.c_str());
