@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <functional>
+#include </usr/include/snappy.h>
 #include "mtf.hpp"
 #include "util.hpp"
 using namespace std;
@@ -331,6 +332,11 @@ int main(int argc, char** argv) {
 	cout << "Set the KEEP_RAW_FILES environment variable to keep all generated files" << endl;
         return 1;
     }
+    po::options_description desc("Allowed options");
+	desc.add_options()
+	    ("help", "produce help message")
+	    ("compression", po::value<int>(), "set compression level")
+	;
     //Parse the args
     string infile(argv[1]);
     //Remove path
