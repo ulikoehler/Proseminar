@@ -19,10 +19,15 @@
 #include <fstream>
 #include <functional>
 #include </usr/include/snappy.h>
+#include <boost/program_options.hpp>
 #include "mtf.hpp"
 #include "util.hpp"
+#ifndef NO_SNAPPY
+#include "snappy.hpp"
+#endif
 using namespace std;
 using boost::thread;
+namespace po = boost::program_options;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
 
@@ -233,23 +238,32 @@ void bwtOnFile(const char* infile, const char* outfileBWTOnly, const char* outfi
 }
 
 enum CompressMode {
+#ifndef NO_SNAPPY
+    SNAPPY,
+#endif
     HUFFCODE, LZOP
 };
 
 /**
  * Thread ftor to compress a single file using a native binary
  */
-void compressFile(CompressMode mode, size_t& filesize, const string& input, const string& output) {
+void compressFile(CompressMode mode, size_t& filesize, const string& inputFilename, const string& outputFilename) {
     if (mode == HUFFCODE) {
-        string cmd = (boost::format("%3% -i %1% -o %2%") % input % output % huffcodePath).str();
+        string cmd = (boost::format("%3% -i %1% -o %2%") % inputFilename % outputFilename % huffcodePath).str();
+        filesize = getFilesizeInBytes(outputFilename.c_str());
         int ret = system(cmd.c_str());
     } else if (mode == LZOP) {
-        string cmd = (boost::format("%2% %1%") % input % lzopPath).str();
+        string cmd = (boost::format("%2% %1%") % inputFilename % lzopPath).str();
+        filesize = getFilesizeInBytes(outputFilename.c_str());
         int ret = system(cmd.c_str());
+    } else if (mode == SNAPPY) {
+        //Snappy algorithm calculates the filesize resulting from compression directly
+        //100k has been determined as good avg blksize experimentally
+        filesize = getSnappyCompressedSize(100000, inputFilename.c_str());
     }
-    filesize = getFilesizeInBytes(output.c_str());
-    if(deleteRawFiles) {
-        remove(output.c_str());
+    //Delete the output file if enabled
+    if (deleteRawFiles && (mode != SNAPPY)) { //snappy produces no output file
+        remove(outputFilename.c_str());
     }
 }
 
@@ -261,6 +275,7 @@ void compressFile(CompressMode mode, size_t& filesize, const string& input, cons
 void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, size_t huffSize) {
     //IGNORE blocksize == 0
     if (blocksize == 0) {
+
         return;
     }
     string infilename = infile.erase(0, infile.find_last_of('/') + 1);
@@ -276,7 +291,7 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     string mtfHuffmanFilename = (boost::format("%3%%1%.%2%.mtf.huff") % infilename % blocksize % outdir).str();
     //Start each compressor in a separate thread
     //overhead should be acceptable when compared to performance gain
-    const int numThreads = 6;
+    const int numThreads = 9;
     ThreadPtr compressThreads[numThreads];
     size_t bwtHuffmanSize = 0;
     size_t bwtMtfHuffmanSize = 0;
@@ -284,19 +299,53 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     size_t bwtLZOSize = 0;
     size_t bwtMtfLZOSize = 0;
     size_t mtfLZOSize = 0;
+    size_t bwtSnappySize = 0;
+    size_t bwtMtfSnappySize = 0;
+    size_t mtfSnappySize = 0;
     //Start the huffcode threads
-    compressThreads[0] = new thread([&](){compressFile(HUFFCODE, bwtHuffmanSize, outfileBWTOnly, btwHuffmanFilename);});
-    compressThreads[1] = new thread([&](){compressFile(HUFFCODE, bwtMtfHuffmanSize, outfileBWTMTF, btwMtfHuffmanFilename);});
-    compressThreads[2] = new thread([&](){compressFile(HUFFCODE, mtfHuffmanSize, outfileMTFOnly, mtfHuffmanFilename);});
+
+    compressThreads[0] = new thread([&]() {
+        compressFile(HUFFCODE, bwtHuffmanSize, outfileBWTOnly, btwHuffmanFilename);
+    });
+
+    compressThreads[1] = new thread([&]() {
+        compressFile(HUFFCODE, bwtMtfHuffmanSize, outfileBWTMTF, btwMtfHuffmanFilename);
+    });
+
+    compressThreads[2] = new thread([&]() {
+        compressFile(HUFFCODE, mtfHuffmanSize, outfileMTFOnly, mtfHuffmanFilename);
+    });
     //Start the LZO threads
-    compressThreads[3] = new thread([&](){compressFile(LZOP, bwtLZOSize, outfileBWTOnly, btwHuffmanFilename);});
-    compressThreads[4] = new thread([&](){compressFile(LZOP, bwtMtfLZOSize, outfileBWTMTF, btwMtfHuffmanFilename);});
-    compressThreads[5] = new thread([&](){compressFile(LZOP, mtfLZOSize, outfileMTFOnly, mtfHuffmanFilename);});
+
+    compressThreads[3] = new thread([&]() {
+        compressFile(LZOP, bwtLZOSize, outfileBWTOnly, btwHuffmanFilename);
+    });
+
+    compressThreads[4] = new thread([&]() {
+        compressFile(LZOP, bwtMtfLZOSize, outfileBWTMTF, btwMtfHuffmanFilename);
+    });
+
+    compressThreads[5] = new thread([&]() {
+        compressFile(LZOP, mtfLZOSize, outfileMTFOnly, mtfHuffmanFilename);
+    });
+    //Start the snappy threads
+
+    compressThreads[6] = new thread([&]() {
+        compressFile(SNAPPY, bwtSnappySize, outfileBWTOnly, "");
+    });
+
+    compressThreads[7] = new thread([&]() {
+        compressFile(SNAPPY, bwtMtfSnappySize, outfileBWTMTF, "");
+    });
+
+    compressThreads[8] = new thread([&]() {
+        compressFile(SNAPPY, mtfSnappySize, outfileMTFOnly, "");
+    });
     //While the other threads are running, get the remaining filesizes 
     //Uncompressed files
     size_t bwtMtfSize = getFilesizeInBytes(outfileBWTMTF.c_str());
     size_t mtfOnlySize = getFilesizeInBytes(outfileMTFOnly.c_str());
-     //Join the threads
+    //Join the threads
     for (int i = 0; i < numThreads; i++) {
         compressThreads[i]->join();
         delete compressThreads[i];
@@ -311,12 +360,16 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
             << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
             << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize << '\n'
             << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize << '\n'
-            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize
-            << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize
-            << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize
-            << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize << endl;
+            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize << '\n'
+            << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize << '\n'
+            << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize << '\n'
+            << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize << '\n'
+            << blocksize << ',' << "BWT+Snappy" << ',' << bwtSnappySize << '\n'
+            << blocksize << ',' << "BWT+MTF+Snappy" << ',' << bwtMtfSnappySize << '\n'
+            << blocksize << ',' << "MTF+Snappy" << ',' << mtfSnappySize << endl;
     //Remove the raw files if option is enabled
     if (deleteRawFiles) {
+
         remove(outfileBWTOnly.c_str());
         remove(outfileBWTMTF.c_str());
         remove(outfileMTFOnly.c_str());
@@ -327,26 +380,46 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
  * 
  */
 int main(int argc, char** argv) {
-    if (argc < 2) {
-        cout << "Usage: bwt <infile> <outdir> <min blocksize | blocksize> [<max blocksize> <blocksize step>]" << endl;
-	cout << "Set the KEEP_RAW_FILES environment variable to keep all generated files" << endl;
+    string infile;
+    string outdir;
+    uint32_t minBlocksize;
+    uint32_t maxBlocksize;
+    uint32_t blocksizeStep;
+    uint32_t blocksize;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+            ("help", "produce help message")
+            ("infile", po::value<string > (&infile), "Input file")
+            ("outdir", po::value<string > (&outdir), "Output directory")
+            ("blocksize", po::value<uint32_t > (&blocksize), "Calculate only a single blocksize")
+            ("min-blocksize", po::value<uint32_t > (&minBlocksize), "The minimum blocksize to calculate")
+            ("max-blocksize", po::value<uint32_t > (&maxBlocksize), "The maximum blocksize to calculate")
+            ("blocksize-step", po::value<uint32_t > (&blocksizeStep), "The difference between two calculated blocksizes")
+            ("keep-files", "Keep all raw files")
+            ;
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+    //Check for illegal option combinations
+    if (vm.count("help")) {
+        cerr << desc << "\n";
         return 1;
     }
-    po::options_description desc("Allowed options");
-	desc.add_options()
-	    ("help", "produce help message")
-	    ("compression", po::value<int>(), "set compression level")
-	;
-    //Parse the args
-    string infile(argv[1]);
-    //Remove path
-    string outdir(argv[2]);
-    int minBlocksize = atoi(argv[3]);
-    //Check if raw files shall be kept
-    const char* keepRawFilesEnvValue = getenv("KEEP_RAW_FILES");
-    string keepRawFilesValueString = (keepRawFilesEnvValue == NULL ? "" : keepRawFilesEnvValue);
-    if (!keepRawFilesValueString.empty()) {
-        cout << "Keeping raw output data";
+    if (vm.count("blocksize") && (vm.count("min-blocksize") || vm.count("max-blocksize") || vm.count("blocksize-step"))) {
+        cerr << "--blocksize must not be specified together with one of --min-blocksize, --max-blocksize or --blocksize-step" << endl;
+        cerr << desc << "\n";
+        return 1;
+    }
+    if (!vm.count("infile") || !(vm.count("outdir"))) {
+        cout << "You need to specify both --input and --outdir!" << endl;
+        cerr << desc << "\n";
+        return 1;
+    }
+    if (!boost::ends_with(outdir, "/")) {
+        outdir += "/";
+    }
+    //Process some optional arguments
+    if (vm.count("keep-files")) {
         deleteRawFiles = false;
     }
     //Create the statistics output file
@@ -363,21 +436,18 @@ int main(int argc, char** argv) {
     }
     cout << "Compressed original file has size " << compressedOriginalSize << endl;
     //Only single or multiple blocksizes
-    if (argc < 6) { //Only single blocksize
+    if (vm.count("blocksize")) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
         autoBWT(infile, outdir, minBlocksize, statsOut, compressedOriginalSize);
         return 0;
     }
-    //Multiple block sizes
-    int maxBlocksize = atoi(argv[4]);
-    int blocksizeStep = atoi(argv[5]);
     //Do some postprocessing to make the filenames valid
     if (!boost::ends_with(outdir, "/")) {
         outdir += "/";
     }
     //Execute the BWT
     cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
-    for (int i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
+    for (uint32_t i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
         cout << "Calculating BWT with blocksize " << i << '\n';
         autoBWT(infile, outdir, i, statsOut, compressedOriginalSize);
     }
