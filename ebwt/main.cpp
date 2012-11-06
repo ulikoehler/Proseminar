@@ -12,15 +12,16 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/thread/thread.hpp>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
-#include <thread>
 #include <functional>
 #include "mtf.hpp"
 #include "util.hpp"
 using namespace std;
+using boost::thread;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
 
@@ -28,7 +29,7 @@ using namespace std;
 const string huffcodePath = "/home/k/koehleru/bin/huffcode";
 bool deleteRawFiles = true;
 
-typedef thread* ThreadPtr;
+typedef boost::thread* ThreadPtr;
 
 struct Sort {
     unsigned int index;
