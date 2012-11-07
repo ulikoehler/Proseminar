@@ -298,7 +298,7 @@ inline static void* LZ4HC_Create (const BYTE* base)
 {
 	void* hc4 = ALLOCATOR(sizeof(LZ4HC_Data_Structure));
 
-	LZ4HC_Init (hc4, base);
+	LZ4HC_Init ((LZ4HC_Data_Structure*)hc4, base);
 	return hc4;
 }
 
@@ -662,7 +662,7 @@ int LZ4_compressHC(const char* source,
 				 int isize)
 {
 	void* ctx = LZ4HC_Create((const BYTE*)source);
-	int result = LZ4_compressHCCtx(ctx, source, dest, isize);
+	int result = LZ4_compressHCCtx((LZ4HC_Data_Structure*)ctx, source, dest, isize);
 	LZ4HC_Free (&ctx);
 
 	return result;
