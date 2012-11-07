@@ -10,7 +10,6 @@
 
 #include <boost/chrono/thread_clock.hpp>
 #include <boost/chrono/chrono_io.hpp>
-#include <chrono>
 #include <string>
 #include <iostream>
 
@@ -42,13 +41,14 @@ public:
         duration = Duration::zero();
     }
     
-    long long getMicroseconds() {
-	microseconds us(duration);
+    double getMicroseconds() {
+	MicroDuration us = MicroDuration::zero();
+	us += duration;
 	return us.count();
     }
 private:
     typedef boost::chrono::duration<double> Duration;
-    typedef duration<boost::int_least64_t, micro> microseconds;
+    typedef boost::chrono::duration<double, boost::micro> MicroDuration;
     Duration duration;
     boost::chrono::thread_clock::time_point t1, t2;
 };

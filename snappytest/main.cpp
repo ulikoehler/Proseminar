@@ -1,11 +1,12 @@
-#include "Stopwatch.cpp
+#include "Stopwatch.hpp"
 #include <cstdio>
-#include <lzo/lzo.h>
+#include <snappy.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <lzo/lzo1x.h>
 #include <lzo/lzo1x.h>
 #include "../ebwt/util.hpp"
 
@@ -38,7 +39,7 @@ int main(int argc, char** argv) {
 	compStatsOut << "Blocksize,Algorithm,RelSize" << endl;
 	//Initialize the compression timer statistics output
 	string compTimerStatsOutFile = "snappy.comptime." + getFilenameFromPath(infile) + ".txt";
-	ofstream compTimerStatsOut(timeStatsOutFile.c_str());
+	ofstream compTimerStatsOut(compTimerStatsOutFile.c_str());
 	compTimerStatsOut << "Blocksize,Algorithm,ms" << endl;
 	//Initialize the decompression timer statistics output
 	string decompTimerStatsOutFile = "snappy.decomptime." + getFilenameFromPath(infile) + ".txt";
@@ -75,33 +76,33 @@ int main(int argc, char** argv) {
 			//Compress
 			size_t currentCompressedSizeSizeT = 0;
 			snappyCompressionStopwatch.start();
-			snappy::RawCompress(buf, read, outputData, &currentCompressedSize);
+			snappy::RawCompress(buf, read, (char*)outputData, &currentCompressedSizeSizeT);
 			snappyCompressionStopwatch.stop();
 			//Accumulate the compressed length
-			snappyOutputSize += snappyOutput.size();
+			snappyOutputSize += currentCompressedSizeSizeT;
 			//Decompress
 			snappyDecompressionStopwatch.start();
-			snappy::RawUncompress(outputData, currentCompressedSizeSizeT, decompOutputData);
+			snappy::RawUncompress((char*)outputData, currentCompressedSizeSizeT, (char*)decompOutputData);
 			snappyDecompressionStopwatch.stop();
 			//
 			// LZO 1X 11
 			//
-			unsigned int currentCompressedSize = 0;
+			lzo_uint currentCompressedSize = 0;
 			//Compress
 			lzo1x11CompressionStopwatch.start();
-			lzo1x_1_11_compress(buf, read, outputData, &currentCompressedSize, lzoX1Wmem );
+			lzo1x_1_11_compress((unsigned char*)buf, read, outputData, &currentCompressedSize, lzoX1Wmem );
 			lzo1x11CompressionStopwatch.stop();
 			//Accumulate the compressed length
 			lzo1X11OutputSize += currentCompressedSize;
 			//Decompress
 			lzo1x11DecompressionStopwatch.start();
-			lzo1x_decompress( outputData, currentCompressedSize, decompOutputData, &currentCompressedSize, NULL);
+			lzo1x_decompress(outputData, currentCompressedSize, decompOutputData, &currentCompressedSize, NULL);
 			lzo1x11DecompressionStopwatch.stop();
 			//
 			// LZO 1X 999
 			//
 			lzo1x999CompressionStopwatch.start();
-			lzo1x_1_999_compress(buf, read, outputData, &currentCompressedSize, lzoX999Wmem );
+			lzo1x_999_compress((unsigned char*)buf, read, outputData, &currentCompressedSize, lzoX999Wmem );
 			lzo1x999CompressionStopwatch.stop();
 			//Accumulate the compressed length
 			lzo1X999OutputSize += currentCompressedSize;
@@ -120,11 +121,11 @@ int main(int argc, char** argv) {
 		//Write the compression time statistics
 		compTimerStatsOut << blocksize << ",Snappy," << snappyCompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		compTimerStatsOut << blocksize << ",LZO1X11," << lzo1x11CompressionStopwatch.getMicroseconds()/1000.0 << endl;
-		scompTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999CompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		compTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999CompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		//Write the decompression time statistics
-		decompTimerStatsOut << blocksize << ",Snappy," << snappyCompressionStopwatch.getMicroseconds()/1000.0 << endl;
-		decompTimerStatsOut << blocksize << ",LZO1X11," << lzo1x11CompressionStopwatch.getMicroseconds()/1000.0 << endl;
-		decompTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999CompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		decompTimerStatsOut << blocksize << ",Snappy," << lzo1x11DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		decompTimerStatsOut << blocksize << ",LZO1X11," << lzo1x11DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		decompTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
 	}
 	compStatsOut.close();
 	compTimerStatsOut.close();
