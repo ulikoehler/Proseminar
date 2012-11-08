@@ -1,4 +1,9 @@
-df1 <- as.data.frame(read.csv(file=paste("../rawdata/snappy.compression.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
+compression <- as.data.frame(read.csv(file=paste("../rawdata/snappy.compression.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
+comptime <- as.data.frame(read.csv(file=paste("../rawdata/snappy.comptime.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
+decomptime <- as.data.frame(read.csv(file=paste("../rawdata/snappy.decomptime.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
+
+combined <- merge(compression, comptime, by=c("Blocksize"))
+combined <- merge(combined, decomptime, by=c("decomptime"))
 
 library(ggplot2)
 
@@ -11,4 +16,3 @@ ggplot(data=df1, aes(x=Blocksize, y=RelSize, group=Algorithm, color=Algorithm)) 
     xlab("Block size") + ylab("Relative filesize (compressed)") + # Set axis labels
     ggtitle(paste("Snappy - Blocksize vs. relative filesize - ", commandArgs()[6], sep="")) +  # Set title
     theme()
-    
