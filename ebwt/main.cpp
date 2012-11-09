@@ -250,12 +250,12 @@ enum CompressMode {
 void compressFile(CompressMode mode, size_t& filesize, const string& inputFilename, const string& outputFilename) {
     if (mode == HUFFCODE) {
         string cmd = (boost::format("%3% -i %1% -o %2%") % inputFilename % outputFilename % huffcodePath).str();
-        filesize = getFilesizeInBytes(outputFilename.c_str());
         int ret = system(cmd.c_str());
+        filesize = getFilesizeInBytes(outputFilename.c_str());
     } else if (mode == LZOP) {
         string cmd = (boost::format("%2% %1%") % inputFilename % lzopPath).str();
-        filesize = getFilesizeInBytes(outputFilename.c_str());
         int ret = system(cmd.c_str());
+        filesize = getFilesizeInBytes(outputFilename.c_str());
     } else if (mode == SNAPPY) {
         //Snappy algorithm calculates the filesize resulting from compression directly
         //100k has been determined as good avg blksize experimentally
@@ -272,7 +272,7 @@ void compressFile(CompressMode mode, size_t& filesize, const string& inputFilena
  * @param outdir A path to write temporary files to - must end with '/'
  * @param huffSize The size of the original file, huffman-encoded
  */
-void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, size_t huffSize) {
+void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, size_t huffSize, size_t origFilesize) {
     //IGNORE blocksize == 0
     if (blocksize == 0) {
 
@@ -355,18 +355,18 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
     //
     //R-compatible output
     statsOut
-            << blocksize << ',' << "Huffman" << ',' << huffSize << '\n'
-            << blocksize << ',' << "MTF" << ',' << mtfOnlySize << '\n'
-            << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize << '\n'
-            << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize << '\n'
-            << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize << '\n'
-            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize << '\n'
-            << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize << '\n'
-            << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize << '\n'
-            << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize << '\n'
-            << blocksize << ',' << "BWT+Snappy" << ',' << bwtSnappySize << '\n'
-            << blocksize << ',' << "BWT+MTF+Snappy" << ',' << bwtMtfSnappySize << '\n'
-            << blocksize << ',' << "MTF+Snappy" << ',' << mtfSnappySize << endl;
+            << blocksize << ',' << "Huffman" << ',' << huffSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "MTF" << ',' << mtfOnlySize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+Snappy" << ',' << bwtSnappySize/(double)origFilesize << '\n'
+            << blocksize << ',' << "BWT+MTF+Snappy" << ',' << bwtMtfSnappySize/(double)origFilesize << '\n'
+            << blocksize << ',' << "MTF+Snappy" << ',' << mtfSnappySize/(double)origFilesize << endl;
     //Remove the raw files if option is enabled
     if (deleteRawFiles) {
 
@@ -422,6 +422,8 @@ int main(int argc, char** argv) {
     if (vm.count("keep-files")) {
         deleteRawFiles = false;
     }
+    //Get the original filesize
+    size_t originalFilesize = getFilesizeInBytes(infile.c_str());
     //Create the statistics output file
     ofstream statsOut((boost::format("ebwt.statistics.%1%.txt") % getFilenameFromPath(infile)).str().c_str());
     statsOut << "Blocksize,Algorithm,Size" << '\n';
@@ -438,7 +440,7 @@ int main(int argc, char** argv) {
     //Only single or multiple blocksizes
     if (vm.count("blocksize")) { //Only single blocksize
         cout << "Calculating BWT with blocksize " << minBlocksize << endl;
-        autoBWT(infile, outdir, minBlocksize, statsOut, compressedOriginalSize);
+        autoBWT(infile, outdir, minBlocksize, statsOut, compressedOriginalSize, originalFilesize);
         return 0;
     }
     //Do some postprocessing to make the filenames valid
@@ -449,7 +451,7 @@ int main(int argc, char** argv) {
     cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
     for (uint32_t i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
         cout << "Calculating BWT with blocksize " << i << '\n';
-        autoBWT(infile, outdir, i, statsOut, compressedOriginalSize);
+        autoBWT(infile, outdir, i, statsOut, compressedOriginalSize, originalFilesize);
     }
     //Close the statistics FD
     statsOut.close();
