@@ -29,7 +29,7 @@ for(i in 1:length(fileList)) {
   pdf(file=paste("pdf/Benchmark-",sourceFileName, ".pdf", sep=""), height=5, width=7)
   #Write all plots
   print(typeof(plot1));
-  #multiplot(plot1, plot2, plot3, plot4, plot5, cols=2)
+  #multiplot(plot1, plot2, plot3, plot4, plot5, cols=2)+
   #Close the device
   dev.off();
 }

@@ -1,5 +1,5 @@
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE 
+#define BOOST_TEST_MODULE
 #include <boost/test/unit_test.hpp>
 #include <boost/format.hpp>
 #include <iostream>
@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include "../mtf.hpp"
 #include "../util.hpp"
+#include "../rle.hpp"
 
 using namespace std;
 
@@ -72,4 +73,27 @@ BOOST_AUTO_TEST_CASE(TestGetFilenameFromPath) {
     BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("//test.txt"));
     BOOST_CHECK_EQUAL("test", getFilenameFromPath("tmp/test"));
     BOOST_CHECK_EQUAL("test.txt", getFilenameFromPath("./test.txt"));
+}
+
+
+BOOST_AUTO_TEST_CASE(TestRLE) {
+	char* test1 = "AAAABBBC";
+	char* test1Target = new char[strlen(test1)*2];
+	char* test1Expected = new char[6];
+	test1Expected[0] = 'A';
+	test1Expected[1] = (char)4;
+	test1Expected[2] = 'B';
+	test1Expected[3] = (char)3;
+	test1Expected[4] = 'C';
+	test1Expected[5] = (char)1;
+	//Execute RLE and check length
+	BOOST_CHECK_EQUAL(6, doRLE(test1, strlen(test1), test1Target));
+	BOOST_CHECK_EQUAL(test1Expected[0], test1Target[0]); 
+	BOOST_CHECK_EQUAL(test1Expected[1], test1Target[1]); 
+	BOOST_CHECK_EQUAL(test1Expected[2], test1Target[2]); 
+	BOOST_CHECK_EQUAL(test1Expected[3], test1Target[3]); 
+	BOOST_CHECK_EQUAL(test1Expected[4], test1Target[4]); 
+	BOOST_CHECK_EQUAL(test1Expected[5], test1Target[5]); 
+	delete[] test1Target;
+	delete[] test1Expected;
 }

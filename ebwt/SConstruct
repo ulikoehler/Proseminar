@@ -62,9 +62,11 @@ boost_program_options = ["boost_program_options"]
 boost_system = ["boost_system"]
 boost_filesystem = ["boost_filesystem"]
 boost_chrono = ["boost_chrono"]
+boost_thread = ["boost_thread"]
 zlib = ["z"]
 tiff = ["tiff"]
 png = ["png"] + zlib
+snappy = ["snappy"]
 boosttest = ["boost_unit_test_framework"]
 liblevelosm = ["levelosm"]
 tbb = ["tbb"] 
@@ -76,7 +78,7 @@ cliSources = ["main.cpp"]
 env.Program(source=cliSources,
 			target=bindir+"bwt",
                         CCFLAGS=ccflags + ["-s"],
-			LIBS=alllibs)
+			LIBS=alllibs+boost_chrono+boost_program_options+boost_thread+snappy)
 			
 #Build and execute unit tests
 bwttest = env.Program(source=["test/BWTTest.cpp"],
