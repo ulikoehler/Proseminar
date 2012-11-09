@@ -1,18 +1,47 @@
-compression <- as.data.frame(read.csv(file=paste("../rawdata/snappy.compression.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
-comptime <- as.data.frame(read.csv(file=paste("../rawdata/snappy.comptime.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
-decomptime <- as.data.frame(read.csv(file=paste("../rawdata/snappy.decomptime.",commandArgs()[6],".txt",sep=""),head=TRUE,sep=","))
+#sourceFileName <- commandArgs()[6]
+library(ggplot2,quietly=TRUE)
 
-combined <- merge(compression, comptime, by=c("Blocksize"))
-combined <- merge(combined, decomptime, by=c("decomptime"))
+fileList <- dir("../rawdata",pattern="snappy\\.compression\\..*.txt")
 
-library(ggplot2)
+createCombinedSizeDiagrams <- function(compression, comptime, decomptime, sourceFileName) {
+	names(decomptime)[names(decomptime)=="ms"] <- "Decomptime"
+	names(comptime)[names(comptime)=="ms"] <- "Comptime"
 
-#png(file=paste("Snappy-Blocksize-Compression-",commandArgs()[6], ".png", sep=""),height=400, width=800)
-pdf(file=paste("blocksize-compression-diagrams/Snappy-Blocksize-Compression-",commandArgs()[6], ".pdf", sep=""),height=5, width=7)
+	combined <- merge(compression, comptime)
+	combined <- merge(combined, decomptime)
 
-ggplot(data=df1, aes(x=Blocksize, y=RelSize, group=Algorithm, color=Algorithm)) +
-    geom_line() + # Thinner lines
-    scale_fill_hue(name="Algorithmus") +      # Set legend title
-    xlab("Block size") + ylab("Relative filesize (compressed)") + # Set axis labels
-    ggtitle(paste("Snappy - Blocksize vs. relative filesize - ", commandArgs()[6], sep="")) +  # Set title
-    theme()
+	#Calculate how much size is gained per ms of comp/decomp time
+	combined["SizePerCompTime"] <- NA;
+	combined["SizePerDecompTime"] <- NA;
+	combined$SizePerCompTime <- combined$RelSize / combined$Comptime
+	combined$SizePerDecompTime <- combined$RelSize / combined$Decomptime
+
+  pdf(file=paste("combined-diagrams/Snappy-SizePerComptime-",sourceFileName, ".pdf", sep=""),height=5, width=7)
+
+	ggplot(data=combined, aes(x=Blocksize, y=SizePerCompTime, group=Algorithm, color=Algorithm)) +
+	    geom_line() + # Thinner lines
+	    scale_fill_hue(name="Algorithm") +      # Set legend title
+	    xlab("Block size") + ylab("% Size gain per ms compression time") + # Set axis labels
+	    ggtitle(paste("Snappy - Blocksize vs. relative filesize - ", sourceFileName, sep="")) +  # Set title
+	    theme()
+	    
+	pdf(file=paste("combined-diagrams/Snappy-SizePerDecomptime-",sourceFileName, ".pdf", sep=""),height=5, width=7)
+
+	ggplot(data=combined, aes(x=Blocksize, y=SizePerDecompTime, group=Algorithm, color=Algorithm)) +
+	    geom_line() + # Thinner lines
+	    scale_fill_hue(name="Algorithm") +      # Set legend title
+	    xlab("Block size") + ylab("% Size gain per ms decompression time") + # Set axis labels
+	    ggtitle(paste("Snappy - Blocksize vs. relative filesize - ", sourceFileName, sep="")) +  # Set title
+	    theme()
+}
+
+for(i in 1:length(fileList)) {
+  sourceFileName <- strsplit(fileList[i],"\\.")[[1]][3];
+  print(paste("Processing ",sourceFileName));	#Rename columns
+  
+  compression <- read.csv(file=paste("../rawdata/snappy.compression.",sourceFileName,".txt",sep=""),head=TRUE,sep=",")
+  comptime <- read.csv(file=paste("../rawdata/snappy.comptime.",sourceFileName,".txt",sep=""),head=TRUE,sep=",")
+  decomptime <- read.csv(file=paste("../rawdata/snappy.decomptime.",sourceFileName,".txt",sep=""),head=TRUE,sep=",")
+  
+  createDiagrams(compression, comptime, decomptime, sourceFileName); 
+}
