@@ -17,13 +17,19 @@ for(i in 1:length(fileList)) {
   
    #Create the plots, not neccessarily 1 plot per variable
   plot1 <- createCompressionDiagram(compression, sourceFileName);
-  plot2 <- createCompressionTimeDiagram(comptime, sourceFileName);
-  plot3 <- createDecompressionTimeDiagram(decomptime, sourceFileName);
-  plot4 <- createCombinedSizeDiagrams(compression, comptime, decomptime, sourceFileName);
+  compressionTimeDiagrams <- createCompressionTimeDiagram(comptime, sourceFileName)
+  plot2 <- compressionTimeDiagrams[1]
+  plot3 <- compressionTimeDiagrams[2]
+  plot3 <- createDecompressionTimeDiagram(decomptime, sourceFileName)
+  sizeTimeDiagrams <- createCombinedSizeDiagrams(compression, comptime, decomptime, sourceFileName)
+  plot4 <- sizeTimeDiagrams[1]
+  plot5 <- sizeTimeDiagrams[2]
+  #print(length(plot))
   #Setup the PDF device
   pdf(file=paste("pdf/Benchmark-",sourceFileName, ".pdf", sep=""), height=5, width=7)
   #Write all plots
-  multiplot(c(plot1, plot2, plot3, plot4), cols=2)
+  print(typeof(plot1));
+  #multiplot(plot1, plot2, plot3, plot4, plot5, cols=2)
   #Close the device
   dev.off();
 }
