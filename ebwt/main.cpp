@@ -215,8 +215,6 @@ struct SizeDataResult {
         rleLZ4Size = 0;
         bwtRleLZ4Size = 0;
         //None
-        bwtMtfSize = 0;
-        mtfOnlySize = 0;
         rleOnlySize = 0;
         bwtRleSize = 0;
         //Only compression
@@ -226,6 +224,7 @@ struct SizeDataResult {
         lz4Size = 0;
         //Misc
         origFilesize = 0;
+        rleSize = 0;
     }
 
     //Huffman
@@ -252,9 +251,7 @@ struct SizeDataResult {
     size_t mtfLZ4Size;
     size_t rleLZ4Size;
     size_t bwtRleLZ4Size;
-    //None
-    size_t bwtMtfSize;
-    size_t mtfOnlySize;
+    //None -- BWT, MTF and BWT+MTF size left out because these encodings don't change the sizes
     size_t rleOnlySize;
     size_t bwtRleSize;
     //Only compression
@@ -264,43 +261,42 @@ struct SizeDataResult {
     size_t lz4Size;
     //Misc
     size_t origFilesize;
+    size_t rleSize;
 
     void write(std::ostream & out) {
         out
                 //Only compression
-                << blocksize << ',' << "Huffman" << ',' << huffSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZO" << ',' << lzoSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Snappy" << ',' << snappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZ4" << ',' << lz4Size / (double) origFilesize << '\n'
+                << blocksize << ',' << "CompressionOnly,Huffman" << ',' << huffSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "CompressionOnly,LZO" << ',' << lzoSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "CompressionOnly,Snappy" << ',' << snappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "CompressionOnly,LZ4" << ',' << lz4Size / (double) origFilesize << '\n'
                 //No compression
-                << blocksize << ',' << "MTF" << ',' << mtfOnlySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+MTF" << ',' << bwtMtfSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "RLE" << ',' << rleOnlySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+RLE" << ',' << bwtRleSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "EncodingOnly,RLE" << ',' << rleOnlySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "EncodingOnly,BWT+RLE" << ',' << bwtRleSize / (double) origFilesize << '\n'
                 //Huffman
-                << blocksize << ',' << "BWT+Huffman" << ',' << bwtHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "MTF+Huffman" << ',' << mtfHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "RLE+Huffman" << ',' << rleHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+RLE+Huffman" << ',' << bwtRleHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,BWT+Huffman" << ',' << bwtHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,MTF+Huffman" << ',' << mtfHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,RLE+Huffman" << ',' << rleHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,BWT+RLE+Huffman" << ',' << bwtRleHuffmanSize / (double) origFilesize << '\n'
                 //LZO
-                << blocksize << ',' << "BWT+LZO" << ',' << bwtLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+MTF+LZO" << ',' << bwtMtfLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "MTF+LZO" << ',' << mtfLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "RLE+LZO" << ',' << rleLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+RLE+LZO" << ',' << bwtRleLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,BWT+LZO" << ',' << bwtLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,BWT+MTF+LZO" << ',' << bwtMtfLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,MTF+LZO" << ',' << mtfLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,RLE+LZO" << ',' << rleLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,BWT+RLE+LZO" << ',' << bwtRleLZOSize / (double) origFilesize << '\n'
                 //Snappy
-                << blocksize << ',' << "BWT+Snappy" << ',' << bwtSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+MTF+Snappy" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "MTF+Snappy" << ',' << mtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "RLE+Snappy" << ',' << rleSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+RLE+Snappy" << ',' << bwtRleSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,BWT+Snappy" << ',' << bwtSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,BWT+MTF+Snappy" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,MTF+Snappy" << ',' << mtfSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,RLE+Snappy" << ',' << rleSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,BWT+RLE+Snappy" << ',' << bwtRleSnappySize / (double) origFilesize << '\n'
                 //LZ4
-                << blocksize << ',' << "BWT+LZ4" << ',' << bwtSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+MTF+LZ4" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "MTF+LZ4" << ',' << mtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "RLE+LZ4" << ',' << rleSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "BWT+RLE+LZ4" << ',' << bwtRleSnappySize / (double) origFilesize << endl;
+                << blocksize << ',' << "LZ4,BWT+LZ4" << ',' << bwtSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZ4,BWT+MTF+LZ4" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZ4,MTF+LZ4" << ',' << mtfSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZ4,RLE+LZ4" << ',' << rleSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZ4,BWT+RLE+LZ4" << ',' << bwtRleSnappySize / (double) origFilesize << endl;
     }
 };
 
@@ -329,36 +325,62 @@ void bwtOnFile(const char* infile,
         //
         // Calculate the compression results for the uncompressed buffer
         //
-        info->
-                //
-                // Calculate MTF only and write to corresponding file (compressed later)
-                //
-                char* mtfOnly = new char[read];
-        moveToFrontEncodeWithAlphabetCopy(buf, read, mtfOnly);
-        fwrite(mtfOnly, 1, read, mtfOnlyFD);
-        delete[] mtfOnly;
+        info->lzoSize += getLZO1X11OutputSize(buf, read);
+        info->lz4Size += getLZ4OutputSize(buf, read);
+        info->snappySize += getSnappyOutputSize(buf, read);
+        info->huffSize += getHuffmanOutputSize(buf, read);
         //
-        // Calculate and write RLE only
+        // Calculate MTF on the raw input
+        //
+        char* mtfBuffer = new char[read];
+        moveToFrontEncodeAutoAlphabetCopy(buf, read, mtfBuffer);
+        //Compress and calculate the sizes
+        info->mtfLZOSize += getLZO1X11OutputSize(mtfBuffer, read);
+        info->mtfLZ4Size += getLZ4OutputSize(mtfBuffer, read);
+        info->mtfSnappySize += getSnappyOutputSize(mtfBuffer, read);
+        info->mtfHuffmanSize += getHuffmanOutputSize(mtfBuffer, read);
+        delete[] mtfBuffer;
+        //
+        // Calculate RLE on the raw input
         //
         char* rleBuffer = new char[read * 2]; //Maximum RLE size if no runs are found
-        size_t rleSize = doRLE(buf, read, rleBuffer);
-        fwrite(rleBuffer, 1, rleSize, rleOnlyFD);
+        size_t bwtRleSize = doRLE(buf, read, rleBuffer);
+        //Compress and calculate the sizes
+        info->rleSize += bwtRleSize;
+        info->rleLZOSize += getLZO1X11OutputSize(rleBuffer, bwtRleSize);
+        info->rleLZ4Size += getLZ4OutputSize(rleBuffer, bwtRleSize);
+        info->rleSnappySize += getSnappyOutputSize(rleBuffer, bwtRleSize);
+        info->rleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
+        delete[] rleBuffer;
         //
-        // Calculate BWT (in-place) --> buf now contains bwt
+        // Calculate BWT --> transformer.L now contains BWT result (except of index)
         //
         transformer.bwt(buf);
-        fwrite(transformer.L, 1, read, bwtOnlyFD);
+        //Compress and calculate the sizes
+        info->bwtLZOSize += getLZO1X11OutputSize(transformer.L, transformer.datasize);
+        info->bwtLZ4Size += getLZ4OutputSize(transformer.L, transformer.datasize);
+        info->bwtSnappySize += getSnappyOutputSize(transformer.L, transformer.datasize);
+        info->bwtHuffmanSize += getHuffmanOutputSize(transformer.L, transformer.datasize);
         //
         // Calculate BWT + MTF
         //
-        moveToFrontEncodeWithAlphabet(transformer.L, read); //Auto-create the alphabet and MTF encode the BWT stuff
-        fwrite(transformer.L, 1, read, mtfFD);
+        moveToFrontEncodeAutoAlphabetInPlace(transformer.L, read); //Auto-create the alphabet and MTF encode the BWT stuff
+        //Compress and calculate the sizes
+        info->bwtMtfLZOSize += getLZO1X11OutputSize(transformer.L, read);
+        info->bwtMtfLZ4Size += getLZ4OutputSize(transformer.L, read);
+        info->bwtMtfSnappySize += getSnappyOutputSize(transformer.L, read);
+        info->bwtHuffmanSize += getHuffmanOutputSize(transformer.L, read);
         //
         // Calculate BWT + RLE
         //
         //Reuse the RLE-buffer from the RLE-only encoding
-        size_t rleSize = doRLE(buf, read, rleBuffer);
-        fwrite(rleBuffer, 1, rleSize, rleFD);
+        size_t bwtRleSize = doRLE(buf, read, rleBuffer);
+        //Compress and calculate the sizes
+        info->bwtRleSize += bwtRleSize;
+        info->bwtRleLZOSize += getLZO1X11OutputSize(rleBuffer, bwtRleSize);
+        info->bwtRleLZ4Size += getLZ4OutputSize(rleBuffer, bwtRleSize);
+        info->bwtRleSnappySize += getSnappyOutputSize(rleBuffer, bwtRleSize);
+        info->bwtRleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
         delete[] rleBuffer;
 
     }

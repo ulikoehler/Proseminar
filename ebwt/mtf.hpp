@@ -85,14 +85,14 @@ void moveToFrontEncodeCopy(const char* str, size_t len, char* dest, deque<char>&
 }
 
 
-void moveToFrontEncodeWithAlphabet(char* str, size_t len) {
+void moveToFrontEncodeAutoAlphabetInPlace(char* str, size_t len) {
     deque<char> alphabet = getAlphabet(str, len);
     moveToFrontEncode(str, len, alphabet);
 }
 
-void moveToFrontEncodeWithAlphabetCopy(const char* str, size_t len, char* dest) {
-    deque<char> alphabet = getAlphabet(str, len);
-    moveToFrontEncodeCopy(str, len, dest, alphabet);
+void moveToFrontEncodeAutoAlphabetCopy(const char* input, size_t len, char* output) {
+    deque<char> alphabet = getAlphabet(input, len);
+    moveToFrontEncodeCopy(input, len, output, alphabet);
 }
 
 
