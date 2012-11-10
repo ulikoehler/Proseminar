@@ -21,12 +21,12 @@ createCombinedSizeDiagrams <- function(compression, comptime, decomptime, source
     ggtitle(paste("Size gain per compression time - ", sourceFileName, sep="")) +  # Set title
     theme()
   
-  plot2 <- ggplot(data=combined, aes(x=Blocksize, y=SizePerDecompTime, group=Algorithm, color=Algorithm)) +
+  plot2 <- (ggplot(data=combined, aes(x=Blocksize, y=SizePerDecompTime, group=Algorithm, color=Algorithm)) +
     geom_line() + # Thinner lines
     scale_fill_hue(name="Algorithm") +      # Set legend title
     xlab("Block size") + ylab("% Size gain per ms decompression time") + # Set axis labels
     ggtitle(paste("Size gain per decompression time - ", sourceFileName, sep="")) +  # Set title
-    theme()
+    theme())
   
-  return(c(plot1, plot2));
+  return(list(plot1, plot2));
 }
