@@ -12,7 +12,6 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/thread/thread.hpp>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -21,20 +20,13 @@
 #include <boost/program_options.hpp>
 #include "mtf.hpp"
 #include "util.hpp"
+#include "rle.hpp"
 #include "compression.hpp"
 
 using namespace std;
-using boost::thread;
 namespace po = boost::program_options;
 //Heapsort implementation from:
 //http://www.algorithmist.com/index.php/Heap_sort.c
-
-//Configs
-const string huffcodePath = "/home/k/koehleru/bin/huffcode";
-const string lzopPath = "/home/k/koehleru/bin/lzop";
-bool deleteRawFiles = true;
-
-typedef boost::thread* ThreadPtr;
 
 struct Sort {
     unsigned int index;
@@ -187,9 +179,9 @@ struct BWTTransformer {
     }
 };
 
-struct SizeDataResult {
+struct EBWTStatisticsDataset {
 
-    SizeDataResult() {
+    EBWTStatisticsDataset() {
         //Huffman
         bwtHuffmanSize = 0;
         bwtMtfHuffmanSize = 0;
@@ -263,7 +255,7 @@ struct SizeDataResult {
     size_t origFilesize;
     size_t rleSize;
 
-    void write(std::ostream & out) {
+    void write(std::ostream & out, unsigned int blocksize) {
         out
                 //Only compression
                 << blocksize << ',' << "CompressionOnly,Huffman" << ',' << huffSize / (double) origFilesize << '\n'
@@ -303,12 +295,12 @@ struct SizeDataResult {
 size_t getFilesizeInBytes(const char* filename) {
     struct stat filestatus;
     stat(filename, &filestatus);
-    return filestatus.st_size;  
+    return filestatus.st_size;
 }
 
 void bwtOnFile(const char* infile,
         unsigned int blocksize,
-        SizeDataResult& info) {
+        EBWTStatisticsDataset& info) {
     FILE* inFD = fopen(infile, "r");
     //Initialize the transformer
     BWTTransformer transformer(blocksize);
@@ -325,159 +317,65 @@ void bwtOnFile(const char* infile,
         //
         // Calculate the compression results for the uncompressed buffer
         //
-        info->lzoSize += getLZO1X11OutputSize(buf, read);
-        info->lz4Size += getLZ4OutputSize(buf, read);
-        info->snappySize += getSnappyOutputSize(buf, read);
-        info->huffSize += getHuffmanOutputSize(buf, read);
+        info.lzoSize += getLZO1X11OutputSize(buf, read);
+        info.lz4Size += getLZ4OutputSize(buf, read);
+        info.snappySize += getSnappyOutputSize(buf, read);
+        info.huffSize += getHuffmanOutputSize(buf, read);
         //
         // Calculate MTF on the raw input
         //
         char* mtfBuffer = new char[read];
         moveToFrontEncodeAutoAlphabetCopy(buf, read, mtfBuffer);
         //Compress and calculate the sizes
-        info->mtfLZOSize += getLZO1X11OutputSize(mtfBuffer, read);
-        info->mtfLZ4Size += getLZ4OutputSize(mtfBuffer, read);
-        info->mtfSnappySize += getSnappyOutputSize(mtfBuffer, read);
-        info->mtfHuffmanSize += getHuffmanOutputSize(mtfBuffer, read);
+        info.mtfLZOSize += getLZO1X11OutputSize(mtfBuffer, read);
+        info.mtfLZ4Size += getLZ4OutputSize(mtfBuffer, read);
+        info.mtfSnappySize += getSnappyOutputSize(mtfBuffer, read);
+        info.mtfHuffmanSize += getHuffmanOutputSize(mtfBuffer, read);
         delete[] mtfBuffer;
         //
         // Calculate RLE on the raw input
         //
         char* rleBuffer = new char[read * 2]; //Maximum RLE size if no runs are found
-        size_t bwtRleSize = doRLE(buf, read, rleBuffer);
+        size_t rleSize = doRLE(buf, read, rleBuffer);        
         //Compress and calculate the sizes
-        info->rleSize += bwtRleSize;
-        info->rleLZOSize += getLZO1X11OutputSize(rleBuffer, bwtRleSize);
-        info->rleLZ4Size += getLZ4OutputSize(rleBuffer, bwtRleSize);
-        info->rleSnappySize += getSnappyOutputSize(rleBuffer, bwtRleSize);
-        info->rleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
-        delete[] rleBuffer;
+        info.rleSize += rleSize;
+        info.rleLZOSize += getLZO1X11OutputSize(rleBuffer, rleSize);
+        info.rleLZ4Size += getLZ4OutputSize(rleBuffer, rleSize);
+        info.rleSnappySize += getSnappyOutputSize(rleBuffer, rleSize);
+        info.rleHuffmanSize += getHuffmanOutputSize(rleBuffer, rleSize);
         //
         // Calculate BWT --> transformer.L now contains BWT result (except of index)
         //
         transformer.bwt(buf);
         //Compress and calculate the sizes
-        info->bwtLZOSize += getLZO1X11OutputSize(transformer.L, transformer.datasize);
-        info->bwtLZ4Size += getLZ4OutputSize(transformer.L, transformer.datasize);
-        info->bwtSnappySize += getSnappyOutputSize(transformer.L, transformer.datasize);
-        info->bwtHuffmanSize += getHuffmanOutputSize(transformer.L, transformer.datasize);
+        info.bwtLZOSize += getLZO1X11OutputSize(transformer.L, transformer.datasize);
+        info.bwtLZ4Size += getLZ4OutputSize(transformer.L, transformer.datasize);
+        info.bwtSnappySize += getSnappyOutputSize(transformer.L, transformer.datasize);
+        info.bwtHuffmanSize += getHuffmanOutputSize(transformer.L, transformer.datasize);
         //
         // Calculate BWT + MTF
         //
         moveToFrontEncodeAutoAlphabetInPlace(transformer.L, read); //Auto-create the alphabet and MTF encode the BWT stuff
         //Compress and calculate the sizes
-        info->bwtMtfLZOSize += getLZO1X11OutputSize(transformer.L, read);
-        info->bwtMtfLZ4Size += getLZ4OutputSize(transformer.L, read);
-        info->bwtMtfSnappySize += getSnappyOutputSize(transformer.L, read);
-        info->bwtHuffmanSize += getHuffmanOutputSize(transformer.L, read);
+        info.bwtMtfLZOSize += getLZO1X11OutputSize(transformer.L, read);
+        info.bwtMtfLZ4Size += getLZ4OutputSize(transformer.L, read);
+        info.bwtMtfSnappySize += getSnappyOutputSize(transformer.L, read);
+        info.bwtHuffmanSize += getHuffmanOutputSize(transformer.L, read);
         //
         // Calculate BWT + RLE
         //
         //Reuse the RLE-buffer from the RLE-only encoding
         size_t bwtRleSize = doRLE(buf, read, rleBuffer);
         //Compress and calculate the sizes
-        info->bwtRleSize += bwtRleSize;
-        info->bwtRleLZOSize += getLZO1X11OutputSize(rleBuffer, bwtRleSize);
-        info->bwtRleLZ4Size += getLZ4OutputSize(rleBuffer, bwtRleSize);
-        info->bwtRleSnappySize += getSnappyOutputSize(rleBuffer, bwtRleSize);
-        info->bwtRleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
+        info.bwtRleSize += bwtRleSize;
+        info.bwtRleLZOSize += getLZO1X11OutputSize(rleBuffer, bwtRleSize);
+        info.bwtRleLZ4Size += getLZ4OutputSize(rleBuffer, bwtRleSize);
+        info.bwtRleSnappySize += getSnappyOutputSize(rleBuffer, bwtRleSize);
+        info.bwtRleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
         delete[] rleBuffer;
-
     }
     delete[] buf;
     fclose(inFD);
-}
-
-enum CompressMode {
-#ifndef NO_SNAPPY
-    SNAPPY,
-#endif
-    HUFFCODE, LZOP
-};
-
-/**
- * Thread ftor to compress a single file using a native binary
- */
-void compressFile(CompressMode mode,
-        size_t& filesize,
-        const string& inputFilename,
-        const string& outputFilename) {
-    if (mode == HUFFCODE) {
-        string cmd = (boost::format("%3% -i %1% -o %2%") % inputFilename % outputFilename % huffcodePath).str();
-        filesize = getFilesizeInBytes(outputFilename.c_str());
-        int ret = system(cmd.c_str());
-    } else if (mode == LZOP) {
-        string cmd = (boost::format("%2% %1%") % inputFilename % lzopPath).str();
-        filesize = getFilesizeInBytes(outputFilename.c_str());
-        int ret = system(cmd.c_str());
-    } else if (mode == SNAPPY) {
-        //Snappy algorithm calculates the filesize resulting from compression directly
-        //100k has been determined as good avg blksize experimentally
-        filesize = getSnappyCompressedSize(100000, inputFilename.c_str());
-    }
-    //Delete the output file if enabled
-    if (deleteRawFiles && (mode != SNAPPY)) { //snappy produces no output file
-        remove(outputFilename.c_str());
-    }
-}
-
-/**
- * Execute the BWT and choose the output filename automatically
- * @param outdir A path to write temporary files to - must end with '/'
- * @param huffSize The size of the original file, huffman-encoded
- */
-void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, size_t huffSize) {
-    //IGNORE blocksize == 0
-    if (blocksize == 0) {
-        return;
-    }
-    string infilename = infile.erase(0, infile.find_last_of('/') + 1);
-    //Calculate the filenames to write the data to
-    string bwtFilename = (boost::format("%3%%1%.%2%.bwt") % infilename % blocksize % outdir).str();
-    string bwtMTFFilename = (boost::format("%3%%1%.%2%.bwt.mtf") % infilename % blocksize % outdir).str();
-    string mtfFilename = (boost::format("%3%%1%.%2%.mtf") % infilename % blocksize % outdir).str();
-    string rleFilename = (boost::format("%3%%1%.%2%.rle") % infilename % blocksize % outdir).str();
-    string bwtRLEFilename = (boost::format("%3%%1%.%2%.bwt.rle") % infilename % blocksize % outdir).str();
-    //Execute the BWT and MTF algorithms on the input file to produce several output files
-    bwtOnFile(infile.c_str(), bwtFilename.c_str(), bwtMTFFilename.c_str(), mtfFilename.c_str(),
-            bwtRLEFilename.c_str(), rleFilename.c_str(), blocksize);
-    //Calculate the output filenames for huffcode
-    string btwHuffmanFilename = (boost::format("%3%%1%.%2%.bwt.huff") % infilename % blocksize % outdir).str();
-    string btwMtfHuffmanFilename = (boost::format("%3%%1%.%2%.bwt.mtf.huff") % infilename % blocksize % outdir).str();
-    string mtfHuffmanFilename = (boost::format("%3%%1%.%2%.mtf.huff") % infilename % blocksize % outdir).str();
-    string rleHuffmanFilename = (boost::format("%3%%1%.%2%.rle.huff") % infilename % blocksize % outdir).str();
-    string bwtRLEHuffmanFilename = (boost::format("%3%%1%.%2%.bwt.rle.huff") % infilename % blocksize % outdir).str();
-    //Calculate the output filenames for LZO
-    string bwtLZOFilename = (boost::format("%3%%1%.%2%.bwt.lzo") % infilename % blocksize % outdir).str();
-    string bwtMtfLZOFilename = (boost::format("%3%%1%.%2%.bwt.mtf.lzo") % infilename % blocksize % outdir).str();
-    string mtfLZOFilename = (boost::format("%3%%1%.%2%.mtf.lzo") % infilename % blocksize % outdir).str();
-    string rleLZOFilename = (boost::format("%3%%1%.%2%.rle.lzo") % infilename % blocksize % outdir).str();
-    string bwtRLELZOFilename = (boost::format("%3%%1%.%2%.bwt.rle.lzo") % infilename % blocksize % outdir).str();
-    //Start each compressor in a separate thread
-    //overhead should be acceptable when compared to performance gain
-    const int numThreads = 15;
-    ThreadPtr compressThreads[numThreads];
-    //Initialize variables for the resulting filesizes
-
-    //While the other threads are running, get the remaining filesizes 
-    //Uncompressed files
-    //Join the threads
-    for (int i = 0; i < numThreads; i++) {
-        compressThreads[i]->join();
-        delete compressThreads[i];
-    }
-    //
-    // Evaluate the resulting filesizes
-    //
-    //R-compatible output
-
-    //Remove the raw files if option is enabled
-    if (deleteRawFiles) {
-
-        remove(bwtFilename.c_str());
-        remove(bwtMTFFilename.c_str());
-        remove(mtfFilename.c_str());
-    }
 }
 
 /*
@@ -486,31 +384,23 @@ void autoBWT(string& infile, string& outdir, int blocksize, ofstream& statsOut, 
 int main(int argc, char** argv) {
     string infile;
     string outdir;
-    uint32_t minBlocksize;
-    uint32_t maxBlocksize;
-    uint32_t blocksizeStep;
-    uint32_t blocksize;
+    uint32_t factor;
+    uint32_t offset;
+    string envvarName;
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "produce help message")
             ("infile", po::value<string > (&infile), "Input file")
             ("outdir", po::value<string > (&outdir), "Output directory")
-            ("blocksize", po::value<uint32_t > (&blocksize), "Calculate only a single blocksize")
-            ("min-blocksize", po::value<uint32_t > (&minBlocksize), "The minimum blocksize to calculate")
-            ("max-blocksize", po::value<uint32_t > (&maxBlocksize), "The maximum blocksize to calculate")
-            ("blocksize-step", po::value<uint32_t > (&blocksizeStep), "The difference between two calculated blocksizes")
-            ("keep-files", "Keep all raw files")
+            ("envvar", po::value<string > (&envvarName)->default_value("SGE_TASK_ID"), "Set this if you want to use an environment variable other than SGE_TASK_ID to determine the blocksize")
+            ("factor", po::value<uint32_t > (&factor)->default_value(2500), "The factor to multiply the task ID env variable by to get the current blocksize - default 2500")
+            ("offset", po::value<uint32_t > (&offset)->default_value(0), "The blocksize offset")
             ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
     //Check for illegal option combinations
     if (vm.count("help")) {
-        cerr << desc << "\n";
-        return 1;
-    }
-    if (vm.count("blocksize") && (vm.count("min-blocksize") || vm.count("max-blocksize") || vm.count("blocksize-step"))) {
-        cerr << "--blocksize must not be specified together with one of --min-blocksize, --max-blocksize or --blocksize-step" << endl;
         cerr << desc << "\n";
         return 1;
     }
@@ -522,39 +412,17 @@ int main(int argc, char** argv) {
     if (!boost::ends_with(outdir, "/")) {
         outdir += "/";
     }
-    //Process some optional arguments
-    if (vm.count("keep-files")) {
-        deleteRawFiles = false;
-    }
-    //Create the statistics output file
-    ofstream statsOut((boost::format("ebwt.statistics.%1%.txt") % getFilenameFromPath(infile)).str().c_str());
-    statsOut << "Blocksize,Algorithm,Size" << '\n';
-    //Huffman-compress the original file and get its size
-    string compressedOriginalFilename = (boost::format("%2%%1%.huff") % getFilenameFromPath(infile) % outdir).str();
-    string compressOrigCommand = (boost::format("%3% -i %1% -o %2%") % infile % compressedOriginalFilename % huffcodePath).str();
-    cout << "Compressing original file: " << compressOrigCommand << '\n';
-    int ret = system(compressOrigCommand.c_str());
-    size_t compressedOriginalSize = getFilesizeInBytes(compressedOriginalFilename.c_str());
-    if (deleteRawFiles) { //Remove it if keep files isn't set
-        remove(compressedOriginalFilename.c_str());
-    }
-    cout << "Compressed original file has size " << compressedOriginalSize << endl;
-    //Only single or multiple blocksizes
-    if (vm.count("blocksize")) { //Only single blocksize
-        cout << "Calculating BWT with blocksize " << minBlocksize << endl;
-        autoBWT(infile, outdir, minBlocksize, statsOut, compressedOriginalSize);
-        return 0;
-    }
-    //Do some postprocessing to make the filenames valid
-    if (!boost::ends_with(outdir, "/")) {
-        outdir += "/";
-    }
-    //Execute the BWT
-    cout << boost::format("Enabled multi-BWT with min/max %1%/%2%, step %3%") % minBlocksize % maxBlocksize % blocksizeStep << endl;
-    for (uint32_t i = minBlocksize; i < maxBlocksize; i += blocksizeStep) {
-        cout << "Calculating BWT with blocksize " << i << '\n';
-        autoBWT(infile, outdir, i, statsOut, compressedOriginalSize);
-    }
+    //Calculate the blocksize for the current execution
+    unsigned int blocksize = offset + atoi(getenv(envvarName.c_str())) * factor;
+    cout << "Calculating eBWT for blocksize: " << blocksize << endl;
+    //Create the statistics output file - headers: "Blocksize,Group,Algorithm,Size"
+    //Initialize the statistics object
+    EBWTStatisticsDataset stats;
+    stats.origFilesize = getFilesizeInBytes(infile.c_str());
+    bwtOnFile(infile.c_str(), blocksize, stats);
+    //Write the statistics to the corresponding file
+    ofstream statsOut((boost::format("%3%ebwt.stats-%1%.%2%.txt") % getFilenameFromPath(infile) % blocksize % outdir).str().c_str());
+    stats.write(statsOut, blocksize);
     //Close the statistics FD
     statsOut.close();
     return 0;

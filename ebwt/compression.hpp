@@ -17,12 +17,12 @@
 //LZ4
 #include "../lz4/lz4.h"
 
-unsigned char* lzoX1Wmem[LZO1X_1_11_MEM_COMPRESS];
+unsigned char* lzo1X11Wmem[LZO1X_1_11_MEM_COMPRESS];
 
 size_t getHuffmanOutputSize(const char* input, size_t inlen) {
-    char* huffout;
+    unsigned char* huffout;
     unsigned int outlen;
-    huffman_encode_memory(input, inlen, &huffout, &outlen);
+    huffman_encode_memory((const unsigned char*)input, inlen, &huffout, &outlen);
     //malloc is used, so we need to use free instead of delete
     //Although this doesn't matter for most compilers, it makes the code more portable
     free(huffout);
@@ -32,7 +32,7 @@ size_t getHuffmanOutputSize(const char* input, size_t inlen) {
 size_t getLZO1X11OutputSize(const char* input, size_t inlen) {
     unsigned char* outputData = new unsigned char[inlen + (inlen / 16 + 64 + 3)]; //With some reserves for worst case
     lzo_uint currentCompressedSize;
-    lzo1x_1_11_compress((unsigned char*) input, read, outputData, &currentCompressedSize, lzoX1Wmem);
+    lzo1x_1_11_compress((unsigned char*) input, inlen, outputData, &currentCompressedSize, lzo1X11Wmem);
     delete[] outputData;
     return currentCompressedSize;
 }
