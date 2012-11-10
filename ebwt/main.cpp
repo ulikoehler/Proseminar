@@ -216,7 +216,6 @@ struct EBWTStatisticsDataset {
         lz4Size = 0;
         //Misc
         origFilesize = 0;
-        rleSize = 0;
     }
 
     //Huffman
@@ -415,6 +414,11 @@ int main(int argc, char** argv) {
     unsigned int blocksize = offset + atoi(getenv(envvarName.c_str())) * factor;
     cout << "Calculating eBWT for blocksize: " << blocksize << endl;
     //Create the statistics output file - headers: "Blocksize,Group,Algorithm,Size"
+    // Column description:
+    // Blocksize: The current blocksize
+    // Group: The group the algorithm belongs to
+    // Algorithm: The algorithm
+    // Size: The size (of all blocks) the current blocksize-algorithm combination yields
     //Initialize the statistics object
     EBWTStatisticsDataset stats;
     stats.origFilesize = getFilesizeInBytes(infile.c_str());
