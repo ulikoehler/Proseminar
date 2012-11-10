@@ -253,7 +253,6 @@ struct EBWTStatisticsDataset {
     size_t lz4Size;
     //Misc
     size_t origFilesize;
-    size_t rleSize;
 
     void write(std::ostream & out, unsigned int blocksize) {
         out
@@ -338,7 +337,7 @@ void bwtOnFile(const char* infile,
         char* rleBuffer = new char[read * 2]; //Maximum RLE size if no runs are found
         size_t rleSize = doRLE(buf, read, rleBuffer);        
         //Compress and calculate the sizes
-        info.rleSize += rleSize;
+        info.rleOnlySize += rleSize;
         info.rleLZOSize += getLZO1X11OutputSize(rleBuffer, rleSize);
         info.rleLZ4Size += getLZ4OutputSize(rleBuffer, rleSize);
         info.rleSnappySize += getSnappyOutputSize(rleBuffer, rleSize);
@@ -360,7 +359,7 @@ void bwtOnFile(const char* infile,
         info.bwtMtfLZOSize += getLZO1X11OutputSize(transformer.L, read);
         info.bwtMtfLZ4Size += getLZ4OutputSize(transformer.L, read);
         info.bwtMtfSnappySize += getSnappyOutputSize(transformer.L, read);
-        info.bwtHuffmanSize += getHuffmanOutputSize(transformer.L, read);
+        info.bwtMtfHuffmanSize += getHuffmanOutputSize(transformer.L, read);
         //
         // Calculate BWT + RLE
         //
@@ -427,4 +426,3 @@ int main(int argc, char** argv) {
     statsOut.close();
     return 0;
 }
-

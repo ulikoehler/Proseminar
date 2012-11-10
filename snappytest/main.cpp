@@ -47,16 +47,16 @@ int main(int argc, char** argv) {
 	ofstream decompTimerStatsOut(decompTimerStatsOutFile.c_str());
 	decompTimerStatsOut << "Blocksize,Algorithm,ms" << endl;
 	//Initialize working memory for LZO
-	unsigned char * lzoX1Wmem = new unsigned char[LZO1X_1_11_MEM_COMPRESS];
+	unsigned char * lzoX1Wmem = new unsigned char[LZO1X_1_MEM_COMPRESS];
 	unsigned char * lzoX999Wmem = new unsigned char[LZO1X_999_MEM_COMPRESS];
 	//Iterate ove rall
 	for( int blocksize = blocksizeRes; blocksize <= blocksizeMax; blocksize += blocksizeRes) {
-		Stopwatch lzo1x11CompressionStopwatch;
+		Stopwatch lzo1x1CompressionStopwatch;
 		Stopwatch lzo1x999CompressionStopwatch;
 		Stopwatch snappyCompressionStopwatch;
 		Stopwatch lz4CompressionStopwatch;
 		Stopwatch lz4HCCompressionStopwatch;
-		Stopwatch lzo1x11DecompressionStopwatch;
+		Stopwatch lzo1x1DecompressionStopwatch;
 		Stopwatch lzo1x999DecompressionStopwatch;
 		Stopwatch snappyDecompressionStopwatch;
 		Stopwatch lz4DecompressionStopwatch;
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 		unsigned char * decompOutputData = new unsigned char[blocksize + (blocksize / 16 + 64 + 3)]; //Decompression data with some reserve
 		//Accumulators for the compressed output sizes
 		size_t snappyOutputSize = 0;
-		size_t lzo1X11OutputSize = 0;
+		size_t lzo1X1OutputSize = 0;
 		size_t lzo1X999OutputSize = 0;
 		size_t lz4OutputSize = 0;
 		size_t lz4HCOutputSize = 0;
@@ -92,19 +92,19 @@ int main(int argc, char** argv) {
 			snappy::RawUncompress((char*)outputData, currentCompressedSizeSizeT, (char*)decompOutputData);
 			snappyDecompressionStopwatch.stop();
 			//
-			// LZO 1X 11
+			// LZO 1X 1
 			//
 			lzo_uint currentCompressedSize = 0;
 			//Compress
-			lzo1x11CompressionStopwatch.start();
-			lzo1x_1_11_compress((unsigned char*)buf, read, outputData, &currentCompressedSize, lzoX1Wmem );
-			lzo1x11CompressionStopwatch.stop();
+			lzo1x1CompressionStopwatch.start();
+			lzo1x_1_compress((unsigned char*)buf, read, outputData, &currentCompressedSize, lzoX1Wmem );
+			lzo1x1CompressionStopwatch.stop();
 			//Accumulate the compressed length
-			lzo1X11OutputSize += currentCompressedSize;
+			lzo1X1OutputSize += currentCompressedSize;
 			//Decompress
-			lzo1x11DecompressionStopwatch.start();
+			lzo1x1DecompressionStopwatch.start();
 			lzo1x_decompress(outputData, currentCompressedSize, decompOutputData, &currentCompressedSize, NULL);
-			lzo1x11DecompressionStopwatch.stop();
+			lzo1x1DecompressionStopwatch.stop();
 			//
 			// LZO 1X 999
 			//
@@ -143,19 +143,19 @@ int main(int argc, char** argv) {
 		fclose(inFD);
 		//Write the compression size statistics
 		compStatsOut << blocksize << ",Snappy," << (snappyOutputSize / (double)originalSize) << endl;
-		compStatsOut << blocksize << ",LZO1X11," << (lzo1X11OutputSize / (double)originalSize) << endl;
+		compStatsOut << blocksize << ",LZO1X1," << (lzo1X1OutputSize / (double)originalSize) << endl;
 		compStatsOut << blocksize << ",LZO1X999," << (lzo1X999OutputSize / (double)originalSize) << endl;
 		compStatsOut << blocksize << ",LZ4," << (lz4OutputSize / (double)originalSize) << endl;
 		compStatsOut << blocksize << ",LZ4HC," << (lz4HCOutputSize / (double)originalSize) << endl;
 		//Write the compression time statistics
 		compTimerStatsOut << blocksize << ",Snappy," << snappyCompressionStopwatch.getMicroseconds()/1000.0 << endl;
-		compTimerStatsOut << blocksize << ",LZO1X11," << lzo1x11CompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		compTimerStatsOut << blocksize << ",LZO1X1," << lzo1x1CompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		compTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999CompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		compTimerStatsOut << blocksize << ",LZ4," << lz4CompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		compTimerStatsOut << blocksize << ",LZ4HC," << lz4HCCompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		//Write the decompression time statistics
-		decompTimerStatsOut << blocksize << ",Snappy," << lzo1x11DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
-		decompTimerStatsOut << blocksize << ",LZO1X11," << lzo1x11DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		decompTimerStatsOut << blocksize << ",Snappy," << lzo1x1DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
+		decompTimerStatsOut << blocksize << ",LZO1X1," << lzo1x1DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		decompTimerStatsOut << blocksize << ",LZO1X999," << lzo1x999DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		decompTimerStatsOut << blocksize << ",LZ4," << lz4DecompressionStopwatch.getMicroseconds()/1000.0 << endl;
 		decompTimerStatsOut << blocksize << ",LZ4HC," << lz4HCDecompressionStopwatch.getMicroseconds()/1000.0 << endl;
