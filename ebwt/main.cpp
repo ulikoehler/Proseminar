@@ -215,6 +215,7 @@ struct EBWTStatisticsDataset {
         lzoSize = 0;
         snappySize = 0;
         lz4Size = 0;
+        deflateSize = 0;
         //Misc
         origFilesize = 0;
         //Timings
@@ -254,6 +255,7 @@ struct EBWTStatisticsDataset {
     size_t lzoSize;
     size_t snappySize;
     size_t lz4Size;
+    size_t deflateSize;
     //Misc
     size_t origFilesize;
     //
@@ -261,6 +263,7 @@ struct EBWTStatisticsDataset {
     //
     double snappyTime;
     double bwtMtfHuffmanTime;
+    double deflateTime;
 
     void write(std::ostream & out, unsigned int blocksize) {
         out
@@ -269,6 +272,7 @@ struct EBWTStatisticsDataset {
                 << blocksize << ',' << "CompressionOnly,LZO" << ',' << lzoSize / (double) origFilesize << ",0.0\n"
                 << blocksize << ',' << "CompressionOnly,Snappy" << ',' << snappySize / (double) origFilesize << "," << snappyTime << "\n"
                 << blocksize << ',' << "CompressionOnly,LZ4" << ',' << lz4Size / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "CompressionOnly,Deflate" << ',' << deflateSize / (double) origFilesize << "," << deflateTime << "\n"
                 //No compression
                 << blocksize << ',' << "EncodingOnly,RLE" << ',' << rleOnlySize / (double) origFilesize << ",0.0\n"
                 << blocksize << ',' << "EncodingOnly,BWT+RLE" << ',' << bwtRleSize / (double) origFilesize << ",0.0\n"
@@ -315,6 +319,7 @@ void bwtOnFile(const char* infile,
     //Initialize the stopwatches to measure how long BWT+MTF+Huff takes
     Stopwatch bwtMtfHuffStopwatch;
     Stopwatch snappyStopwatch;
+    Stopwatch deflateStopwatch;
     //Loop over all blocks in the file
     while (true) {
         size_t read = fread(buf, 1, blocksize, inFD);
@@ -331,9 +336,14 @@ void bwtOnFile(const char* infile,
         info.lzoSize += getLZO1X11OutputSize(buf, read);
         info.lz4Size += getLZ4OutputSize(buf, read);
         snappyStopwatch.start();
+
         info.snappySize += getSnappyOutputSize(buf, read);
         snappyStopwatch.stop();
         info.huffSize += getHuffmanOutputSize(buf, read);
+
+        deflateStopwatch.start();
+        info.deflateSize += getDeflateOutputSize(buf, read);
+        deflateStopwatch.stop();
         //
         // Calculate MTF on the raw input
         //
@@ -396,6 +406,7 @@ void bwtOnFile(const char* infile,
     //Write the timing information
     info.snappyTime = snappyStopwatch.getMicroseconds() / 1000.0;
     info.bwtMtfHuffmanTime = bwtMtfHuffStopwatch.getMicroseconds() / 1000.0;
+    info.deflateTime = deflateStopwatch.getMicroseconds() / 1000.0;
     delete[] buf;
     fclose(inFD);
 }
