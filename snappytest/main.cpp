@@ -1,4 +1,4 @@
-#include "Stopwatch.hpp"
+#include "../ebwt/Stopwatch.hpp"
 #include <cstdio>
 #include <snappy.h>
 #include <iostream>

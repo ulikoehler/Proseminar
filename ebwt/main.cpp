@@ -22,6 +22,7 @@
 #include "util.hpp"
 #include "rle.hpp"
 #include "compression.hpp"
+#include "Stopwatch.hpp"
 
 using namespace std;
 namespace po = boost::program_options;
@@ -216,6 +217,9 @@ struct EBWTStatisticsDataset {
         lz4Size = 0;
         //Misc
         origFilesize = 0;
+        //Timings
+        snappyTime = 0.0;
+        bwtMtfHuffmanTime = 0.0;
     }
 
     //Huffman
@@ -252,40 +256,45 @@ struct EBWTStatisticsDataset {
     size_t lz4Size;
     //Misc
     size_t origFilesize;
+    //
+    // Timings
+    //
+    double snappyTime;
+    double bwtMtfHuffmanTime;
 
     void write(std::ostream & out, unsigned int blocksize) {
         out
                 //Only compression
-                << blocksize << ',' << "CompressionOnly,Huffman" << ',' << huffSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "CompressionOnly,LZO" << ',' << lzoSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "CompressionOnly,Snappy" << ',' << snappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "CompressionOnly,LZ4" << ',' << lz4Size / (double) origFilesize << '\n'
+                << blocksize << ',' << "CompressionOnly,Huffman" << ',' << huffSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "CompressionOnly,LZO" << ',' << lzoSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "CompressionOnly,Snappy" << ',' << snappySize / (double) origFilesize << "," << snappyTime << "\n"
+                << blocksize << ',' << "CompressionOnly,LZ4" << ',' << lz4Size / (double) origFilesize << ",0.0\n"
                 //No compression
-                << blocksize << ',' << "EncodingOnly,RLE" << ',' << rleOnlySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "EncodingOnly,BWT+RLE" << ',' << bwtRleSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "EncodingOnly,RLE" << ',' << rleOnlySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "EncodingOnly,BWT+RLE" << ',' << bwtRleSize / (double) origFilesize << ",0.0\n"
                 //Huffman
-                << blocksize << ',' << "Huffman,BWT+Huffman" << ',' << bwtHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Huffman,MTF+Huffman" << ',' << mtfHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Huffman,BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Huffman,RLE+Huffman" << ',' << rleHuffmanSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Huffman,BWT+RLE+Huffman" << ',' << bwtRleHuffmanSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Huffman,BWT+Huffman" << ',' << bwtHuffmanSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Huffman,MTF+Huffman" << ',' << mtfHuffmanSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Huffman,BWT+MTF+Huffman" << ',' << bwtMtfHuffmanSize / (double) origFilesize << "," << bwtMtfHuffmanTime << "\n"
+                << blocksize << ',' << "Huffman,RLE+Huffman" << ',' << rleHuffmanSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Huffman,BWT+RLE+Huffman" << ',' << bwtRleHuffmanSize / (double) origFilesize << ",0.0\n"
                 //LZO
-                << blocksize << ',' << "LZO,BWT+LZO" << ',' << bwtLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZO,BWT+MTF+LZO" << ',' << bwtMtfLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZO,MTF+LZO" << ',' << mtfLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZO,RLE+LZO" << ',' << rleLZOSize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZO,BWT+RLE+LZO" << ',' << bwtRleLZOSize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZO,BWT+LZO" << ',' << bwtLZOSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZO,BWT+MTF+LZO" << ',' << bwtMtfLZOSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZO,MTF+LZO" << ',' << mtfLZOSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZO,RLE+LZO" << ',' << rleLZOSize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZO,BWT+RLE+LZO" << ',' << bwtRleLZOSize / (double) origFilesize << ",0.0\n"
                 //Snappy
-                << blocksize << ',' << "Snappy,BWT+Snappy" << ',' << bwtSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Snappy,BWT+MTF+Snappy" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Snappy,MTF+Snappy" << ',' << mtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Snappy,RLE+Snappy" << ',' << rleSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "Snappy,BWT+RLE+Snappy" << ',' << bwtRleSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "Snappy,BWT+Snappy" << ',' << bwtSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Snappy,BWT+MTF+Snappy" << ',' << bwtMtfSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Snappy,MTF+Snappy" << ',' << mtfSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Snappy,RLE+Snappy" << ',' << rleSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "Snappy,BWT+RLE+Snappy" << ',' << bwtRleSnappySize / (double) origFilesize << ",0.0\n"
                 //LZ4
-                << blocksize << ',' << "LZ4,BWT+LZ4" << ',' << bwtSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZ4,BWT+MTF+LZ4" << ',' << bwtMtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZ4,MTF+LZ4" << ',' << mtfSnappySize / (double) origFilesize << '\n'
-                << blocksize << ',' << "LZ4,RLE+LZ4" << ',' << rleSnappySize / (double) origFilesize << '\n'
+                << blocksize << ',' << "LZ4,BWT+LZ4" << ',' << bwtSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZ4,BWT+MTF+LZ4" << ',' << bwtMtfSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZ4,MTF+LZ4" << ',' << mtfSnappySize / (double) origFilesize << ",0.0\n"
+                << blocksize << ',' << "LZ4,RLE+LZ4" << ',' << rleSnappySize / (double) origFilesize << ",0.0\n"
                 << blocksize << ',' << "LZ4,BWT+RLE+LZ4" << ',' << bwtRleSnappySize / (double) origFilesize << endl;
     }
 };
@@ -303,6 +312,10 @@ void bwtOnFile(const char* infile,
     //Initialize the transformer
     BWTTransformer transformer(blocksize);
     char* buf = new char[blocksize];
+    //Initialize the stopwatches to measure how long BWT+MTF+Huff takes
+    Stopwatch bwtMtfHuffStopwatch;
+    Stopwatch snappyStopwatch;
+    //Loop over all blocks in the file
     while (true) {
         size_t read = fread(buf, 1, blocksize, inFD);
         if (read < blocksize) { //Last block
@@ -317,7 +330,9 @@ void bwtOnFile(const char* infile,
         //
         info.lzoSize += getLZO1X11OutputSize(buf, read);
         info.lz4Size += getLZ4OutputSize(buf, read);
+        snappyStopwatch.start();
         info.snappySize += getSnappyOutputSize(buf, read);
+        snappyStopwatch.stop();
         info.huffSize += getHuffmanOutputSize(buf, read);
         //
         // Calculate MTF on the raw input
@@ -334,7 +349,7 @@ void bwtOnFile(const char* infile,
         // Calculate RLE on the raw input
         //
         char* rleBuffer = new char[read * 2]; //Maximum RLE size if no runs are found
-        size_t rleSize = doRLE(buf, read, rleBuffer);        
+        size_t rleSize = doRLE(buf, read, rleBuffer);
         //Compress and calculate the sizes
         info.rleOnlySize += rleSize;
         info.rleLZOSize += getLZO1X11OutputSize(rleBuffer, rleSize);
@@ -344,7 +359,9 @@ void bwtOnFile(const char* infile,
         //
         // Calculate BWT --> transformer.L now contains BWT result (except of index)
         //
+        bwtMtfHuffStopwatch.start();
         transformer.bwt(buf);
+        bwtMtfHuffStopwatch.stop();
         //Compress and calculate the sizes
         info.bwtLZOSize += getLZO1X11OutputSize(transformer.L, transformer.datasize);
         info.bwtLZ4Size += getLZ4OutputSize(transformer.L, transformer.datasize);
@@ -353,12 +370,16 @@ void bwtOnFile(const char* infile,
         //
         // Calculate BWT + MTF
         //
+        bwtMtfHuffStopwatch.start();
         moveToFrontEncodeAutoAlphabetInPlace(transformer.L, read); //Auto-create the alphabet and MTF encode the BWT stuff
+        bwtMtfHuffStopwatch.stop();
         //Compress and calculate the sizes
         info.bwtMtfLZOSize += getLZO1X11OutputSize(transformer.L, read);
         info.bwtMtfLZ4Size += getLZ4OutputSize(transformer.L, read);
         info.bwtMtfSnappySize += getSnappyOutputSize(transformer.L, read);
+        bwtMtfHuffStopwatch.start();
         info.bwtMtfHuffmanSize += getHuffmanOutputSize(transformer.L, read);
+        bwtMtfHuffStopwatch.stop();
         //
         // Calculate BWT + RLE
         //
@@ -372,6 +393,9 @@ void bwtOnFile(const char* infile,
         info.bwtRleHuffmanSize += getHuffmanOutputSize(rleBuffer, bwtRleSize);
         delete[] rleBuffer;
     }
+    //Write the timing information
+    info.snappyTime = snappyStopwatch.getMicroseconds() / 1000.0;
+    info.bwtMtfHuffmanTime = bwtMtfHuffStopwatch.getMicroseconds() / 1000.0;
     delete[] buf;
     fclose(inFD);
 }
@@ -413,12 +437,13 @@ int main(int argc, char** argv) {
     //Calculate the blocksize for the current execution
     unsigned int blocksize = offset + atoi(getenv(envvarName.c_str())) * factor;
     cout << "Calculating eBWT for blocksize: " << blocksize << endl;
-    //Create the statistics output file - headers: "Blocksize,Group,Algorithm,Size"
-    // Column description:
-    // Blocksize: The current blocksize
-    // Group: The group the algorithm belongs to
-    // Algorithm: The algorithm
-    // Size: The size (of all blocks) the current blocksize-algorithm combination yields
+    //Create the statistics output file - headers: "Blocksize,Group,Algorithm,Size,Time"
+    //   Column description:
+    //   Blocksize: The current blocksize
+    //   Group: The group the algorithm belongs to
+    //   Algorithm: The algorithm
+    //   Size: The size (of all blocks) the current blocksize-algorithm combination yields
+    //   Time: How long the operation took (cumulatively), in ms, or 0.0 if no value is available
     //Initialize the statistics object
     EBWTStatisticsDataset stats;
     stats.origFilesize = getFilesizeInBytes(infile.c_str());
