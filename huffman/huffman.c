@@ -260,7 +260,7 @@ static int flush_cache(buf_cache* pc)
 	if(pc->cache_cur > 0)
 	{
 		unsigned int newlen = pc->cache_cur + *pc->pbufoutlen;
-		unsigned char* tmp = realloc(*pc->pbufout, newlen);
+		unsigned char* tmp = (unsigned char*)realloc(*pc->pbufout, newlen);
 		if(!tmp)
 			return 1;
 
@@ -291,7 +291,7 @@ static int write_cache(buf_cache* pc,
 		unsigned int newlen;
 		flush_cache(pc);
 		newlen = *pc->pbufoutlen + to_write_len;
-		tmp = realloc(*pc->pbufout, newlen);
+		tmp = (unsigned char*)realloc(*pc->pbufout, newlen);
 		if(!tmp)
 			return 1;
 		memcpy(tmp + *pc->pbufoutlen, to_write, to_write_len);
