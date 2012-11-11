@@ -39,6 +39,8 @@
   df1 <- df1[df1$Algorithm!="LZO",]
   df1 <- df1[df1$Algorithm!="LZ4",]
   df1 <- df1[df1$Algorithm!="Huffman",]
+  df1 <- df1[df1$Algorithm!="Deflate",]
+  
   library(ggplot2)
   
   pdf(file="uk-new-celegans.pdf",height=5,width=7)
