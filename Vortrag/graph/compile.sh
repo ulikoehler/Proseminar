@@ -1,2 +1,2 @@
 #!/bin/sh
-for i in *.r ; do Rscript $i ; done
+for i in *.r ; do echo "Compiling $i..." ; Rscript $i ; done

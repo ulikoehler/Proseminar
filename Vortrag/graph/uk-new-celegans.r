@@ -51,5 +51,3 @@
       xlab("Blockgröße") + ylab("Dateigröße") + # Set axis labels
       ggtitle("Kompression des Chromosoms III aus C. Elegans (FASTA)") +  # Set title
       theme())
-  
-  dev.off();

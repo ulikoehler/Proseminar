@@ -18,7 +18,12 @@ Index Algorithm Pre Ratio
 '))
 close(con)
 
-#Original size
+#Remove results that clutter the diagram too much
+df1 <- df1[df1$Algorithm!="bzip2",]
+df1 <- df1[df1$Algorithm!="xz",]
+df1 <- df1[df1$Algorithm!="xz -e9",]
+df1 <- df1[df1$Algorithm!="compress",]
+
 
 df1 <- transform(df1, Algorithm = reorder(Algorithm, Index))
 library(ggplot2)

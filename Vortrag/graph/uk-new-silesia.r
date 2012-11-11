@@ -50,5 +50,3 @@ print(ggplot(data=df1, aes(x=Blocksize, y=Size, group=Algorithm, colour=Algorith
     xlab("Blockgröße") + ylab("Dateigröße") + # Set axis labels
     ggtitle("Kompression book1 - Charles Dickens (Silesia Corpus)") +  # Set title
     theme())
-
-dev.off();
