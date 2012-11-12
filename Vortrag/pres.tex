@@ -44,6 +44,11 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \AtBeginSection[]{} % for optional outline or other recurrent slide
 
 \begin{document}
+\bgroup
+\setbeamercolor{background canvas}{bg=black}
+\begin{frame}[plain]{}
+\end{frame}
+\egroup
 \frame{\titlepage}
 \begin{frame}
 \frametitle{Aufbau dieser Präsentation}
@@ -106,7 +111,6 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \textrightarrow\ \textbf{Burrows-Wheeler-Transformation}
 \end{itemize}
 \end{frame}
-
 \section{Burrows-Wheeler-Transformation}
 %%%%%% 	
 \subsection{Algorithmus der Burrows-Wheeler-Transformation}
@@ -389,9 +393,9 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \item Berechnung von $P_i := $ Anzahl der Vorkommen von $L_i$ im Präfix von $L$ der Länge $i$
  \item Rekursive Berechnung des Originaltextes S
  \begin{align}
- i_{|L|} &:= I\\
- i_{j-1} &:= P_{i_j} + C_{L_{i_j}}\\
- S_j &:= L_{i+1}
+ i[|L|] &:= I\\
+ i_{j-1} &:= P[i_j] + C[L[i_j]]\\
+ S[j] &:= L[i_{j+1}]
  \end{align}
 \end{itemize}
 \end{frame}
@@ -553,9 +557,9 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \end{itemize}
  \framebreak
  \begin{itemize}
-  \item \textbf{bzip2} nutzt den BWT+MTF+Huffman-Algorithmus - gute Kompression, aber vergleichsweise langsam
-  \item \textbf{bzip2}-Dekompression ist nicht deutlich schneller als Kompression
   \item BWT+MTF+Huffman erzeugt bei Genomdatensätzen nur unwesentlich kleinere Dateien als MTF+Huffman
+  \item Andere Datensätze - auch Bioinformatische - zeigen diesen Effekt nicht
+  \item Große Blockgrößen (über etwa 50 kiBytes) erhöhen die Laufzeit bei der BWT, erhöhen die Kompressionsrate aber nur unwesentlich
   \end{itemize}
   \framebreak	
   \begin{itemize}
@@ -577,7 +581,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \framebreak
  \begin{itemize}
   \item Die Burrows-Wheeler-Transformation ist ein Algorithmus, um Zeichenketten besser komprimierbar zu machen
-  \item Im beliebten Unix-Programm \textit{bzip2} wird die BWT eingesetzt
+  \item Im Unix-Programm \textit{bzip2} wird die BWT eingesetzt
   \item BWT-basierte Algorithmen sind nicht für alle Anwendungsfälle
   \end{itemize}
 \end{frame}
