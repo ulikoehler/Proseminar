@@ -63,25 +63,13 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \item \textbf{Lösung:} Verlustfreie Datenkompression\\
  \textrightarrow\ Daten unter Einsatz von weniger\\
  \quad\ Speicherplatz darstellen
+ \item Prinzip: Eliminierung von Redundanzen
  \item Anforderungen je nach Anwendung:
  \begin{itemize}
   \item Schnelle Kompression/Dekompression
   \item Wenig Speicherplatzverbrauch
  \end{itemize}
 \end{itemize}
-\end{frame}
-%%%%%% Compression
-\begin{frame}[allowframebreaks]
- \frametitle{Kompression - Redundanzen}
- \begin{itemize}
-  \item Ein Byte erlaubt die Darstellung von 256 verschiedenen Werten
-  \item Die meisten Daten haben aber wesentlich kleinere Alphabete:
-  \begin{itemize}
-   \item Englischer Text: 26 Buchstaben + wenige Sonderzeichen (z.B. \textit{. , ( )})
-   \item DNA: 4 Basen + Metainformationen
-   \item Proteine: 20 Nukleinsäuren + Metainformationen
-  \end{itemize}
- \end{itemize}
 \end{frame}
 %%%%%% Naive algorithm
 \begin{frame}[allowframebreaks]
@@ -375,13 +363,28 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \end{tabular}
 \end{columns}
 \end{frame}
+\begin{frame}
+\frametitle{BWT -- Rücktransformation (Original)}
+\begin{itemize}
+ \item Besseres Laufzeitverhalten: $\mathcal{O}(n)$
+ \item Berechnung von $C_{ch} := $ Anzahl der Zeichen in $L$, die im Alphabet vor $ch$ vorkommen
+ \item Berechnung von $P_i := $ Anzahl der Vorkommen von $L_i$ im Präfix von $L$ der Länge $i$
+ \item Rekursive Berechnung des Originaltextes S
+ \begin{align}
+ i_{|L|} &:= I\\
+ i_{j-1} &:= P_{i_j} + C_{L_{i_j}}\\
+ S_j &:= L_{i+1}
+ \end{align}
+\end{itemize}
+
+\end{frame}
 %%%%%% Why it compresses well
 \begin{frame}
  \frametitle{Komprimierbarkeit}
  \begin{itemize}
   \item Einige Zeichenkombinationen tauchen häufiger in Texten auf als andere, z.B. \textit{an} in \textit{and}
-  \item Alle Zeilen von $M$ die mit \textit{nd} beginnen tauchen nacheinander auf (Sortierung)
-  \item Durch Rotation ist bei (fast) allen Zeilen die mit \textit{nd} beginnen das letzte Zeichen \textit{a}\\
+  \item Alle Zeilen von $M$, die mit \textit{nd} beginnen, tauchen nacheinander auf (Sortierung)
+  \item Durch Rotation ist bei nahezu allen Zeilen, die mit \textit{nd} beginnen, das letzte Zeichen \textit{a}\\
   \textrightarrow\ $L$ enthält viele aufeinanderfolgende \textit{a}
  \end{itemize}
 \end{frame}
@@ -391,8 +394,11 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{frame}
  \frametitle{Skalierbarkeit}
  \begin{itemize}
-  \item Komplexität der BWT ist $\mathcal{O}(n^2)$\\
+  \item Komplexität der BWT-Transformation ist $\mathcal{O}(n^2)$\\
     \textrightarrow \ Anwendung der BWT auf sehr große Datensätze (z.B. Genome) skaliert nicht
+  \item Zeitverbrauch hauptsächlich durch Sortierung\\
+  \textrightarrow\ Wahl des Sortieralgorithmus wichtig
+  \item Burrows und Wheeler stellen einen für englische Texte optimierten Quicksort vor
   \item Lösung: Unterteilung des Datensatzes in kleinere \textit{Blöcke} - Anwendung der BWT auf diese Blöcke
  \end{itemize}
 \end{frame}
@@ -401,7 +407,8 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \begin{itemize}
   \item Die Länge des Tupels $(L,I)$ ist insgesamt größer als $|S|$
   \item Genauer Längenunterschied hängt von der Repräsentation von $(L,I)$ ab
-  \item Lösung: Anwendung eines Kompressionsalgorithmus wie \textit{Deflate} auf $(L,I)$
+  \item Lösung: Anwendung eines Kompressionsalgorithmus, z.B. der \textit{Huffman-Kodierung} auf $(L,I)$
+  \item Je nach Kompressionsalgorithmus oft vorherige Anwendung einer Codierung wie der Move-To-Front-Codierung (\textit{MTF})
   \end{itemize}
 \end{frame}
 %%%%%% Comp
@@ -441,7 +448,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \frametitle{Diskussion der Resultate von Burrows \& Wheeler}
  \begin{itemize}
   \item Zeitdaten sind kritisch zu bewerten - Hardware von 1994
-  \item BWT+MTF+Huffman: Gute Kompression, aber dennoch akzeptables Verhältnis \textit{Kompression / Zeit}
+  \item BWT+Huffman: Gute Kompression, aber dennoch akzeptables Verhältnis \textit{Kompression / Zeit}
   \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze, sondern auf einen Kompressionstestkorpus
  \end{itemize}
 \end{frame}
@@ -509,12 +516,27 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-time.pdf}
 \end{frame}
-\begin{frame}
+\begin{frame}[allowframebreaks]
  \frametitle{Diskussion der eigenen Resultate}
  \begin{itemize}
+  \item Nur ein kleiner Teil der Resultate konnte hier diskutiert werden
   \item Verbreitete Verfahren wie \textit{gzip} erzeugen mit BWT größere Dateien als ohne BWT
-  \item Kompression von \textit{BWT+MTF+Huffman}
-  \item Die Resultate von Burrows und Wheeler zeigen, dass sowohl die Move-To-Front-Codierung als auch die Huffman-Kodierung effektiv sind
+  \item Kompression von \textit{BWT+MTF+Huffman} erzeugt unter den BWT-Verfahren die besten Größeneinsparungen\\
+  \item \textbf{Aber:} Langsame Kompression\\
+  \textrightarrow\ Implementierung langsam?
+ \end{itemize}
+ \framebreak
+ \begin{itemize}
+  \item \textbf{bzip2} nutzt den BWT+MTF+Huffman-Algorithmus - gute Kompression, aber vergleichsweise langsam
+  \item \textbf{bzip2}-Dekompression ist nicht deutlich schneller als Kompression
+  \end{itemize}
+  \framebreak
+  \begin{itemize}
+  \item \textbf{Konklusion:} Unmodifizierte BWT ist oft ungeeignet, wenn die Kompressions- oder Dekompressionszeit eine übergeordnete Rolle spielt\\
+  \textrightarrow\ BWT-SAP
+  \item Mögliche Alternative:\\
+  Asymmetrische Kompressionsalgorithmen\\
+  \textrightarrow\ Einzelfallentscheidung
  \end{itemize}
 \end{frame}
 
@@ -522,15 +544,15 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{frame}[allowframebreaks]
  \frametitle{Zusammenfassung}
  \begin{itemize}
-  \item Datenkompression ist aufgrund der enormen Datenmengen die durch Methoden wie High-Throughput-Sequencing entstehen, oftmals notwendig
-  \item Verschiedene Algorithmen erreichen verschiedene Kompressionsraten und benötigen unterschiedlich viel Rechenzeit
+  \item Datenkompression ist aufgrund der enormen Datenmengen, die durch Methoden wie High-Throughput-Sequencing entstehen, oftmals notwendig
+  \item Verschiedene Algorithmen erreichen verschiedene Kompressionsraten und benötigen unterschiedlich viel Rechenzeit für Kompression und Dekompression
  \end{itemize}
  \framebreak
  \begin{itemize}
-  \item Die Burrows-Wheeler-Transformation ist ein Algorithmus, um Strings kompressibler zu machen
-  \item \textit{bzip2} ist ein beliebtes Unix-Programm das oft zur Kompression verschiedenster Daten eingesetzt wird
-  \item Für Sequenzdatenbanken zeigen neuere Publikationen, dass BWT-basierte Verfahren sich oft deutlich besser verhalten als alternative Verfahren
- \end{itemize}
+  \item Die Burrows-Wheeler-Transformation ist ein Algorithmus, um Zeichenketten besser komprimierbar zu machen
+  \item Im beliebten Unix-Programm \textit{bzip2} wird die BWT eingesetzt
+  \item BWT-basierte Algorithmen sind nicht für alle Anwendungsfälle
+  \end{itemize}
 \end{frame}
 %%%%%% End
 \begin{frame}

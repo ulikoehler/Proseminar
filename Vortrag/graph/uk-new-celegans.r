@@ -49,6 +49,6 @@
   print(ggplot(data=df1, aes(x=Blocksize, y=Size, group=Algorithm, colour=Algorithm)) +
       geom_line() + # Thinner lines
       scale_fill_hue(name="Algorithmus") +      # Set legend title
-      xlab("Blockgröße") + ylab("Dateigröße") + # Set axis labels
+      xlab("Blockgröße") + ylab("Relative Dateigröße in %") + # Set axis labels
       ggtitle("Kompression des Chromosoms III aus C. Elegans (FASTA)") +  # Set title
       theme())

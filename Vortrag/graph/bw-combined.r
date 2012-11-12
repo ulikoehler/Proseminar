@@ -21,7 +21,7 @@ ggplot(data=df1, aes(x=Algorithm, y=Ratio, fill=Type)) +
              position=position_dodge(),
              size=.3) +                        # Thinner lines
     scale_fill_hue(name="Typ") +      # Set legend title
-    xlab("Algorithmus") + ylab("Größeneinsparung pro Sekunde") + # Set axis labels
+    xlab("Algorithmus") + ylab("Größeneinsparung in Bytes pro Sekunde") + # Set axis labels
     ggtitle("Größeneinsparung / Zeit verschiedener Algorithmen") +  # Set title
     theme()
     
