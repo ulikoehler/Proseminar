@@ -13,7 +13,8 @@ df1 <- df1[df1$Algorithm!="MTF",]
 df1 <- df1[df1$Algorithm!="MTF+Snappy",]
 df1 <- df1[df1$Algorithm!="MTF+LZO",]
 df1 <- df1[df1$Algorithm!="MTF+LZ4",]
-df1 <- df1[df1$Algorithm!="MTF+Huffman",]
+
+df1 <- df1[df1$Algorithm!="Deflate",]
 
 df1 <- df1[df1$Algorithm!="RLE",]
 df1 <- df1[df1$Algorithm!="RLE+Snappy",]
@@ -21,6 +22,8 @@ df1 <- df1[df1$Algorithm!="RLE+LZO",]
 df1 <- df1[df1$Algorithm!="RLE+LZ4",]
 
 df1 <- df1[df1$Algorithm!="RLE+Huffman",]
+df1 <- df1[df1$Algorithm!="BWT+RLE+Huffman",]
+df1 <- df1[df1$Algorithm!="BWT+Huffman",]
 
 df1 <- df1[df1$Algorithm!="BWT+RLE+Snappy",]
 df1 <- df1[df1$Algorithm!="BWT+RLE+LZO",]

@@ -536,6 +536,8 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-1.pdf}
  \framebreak\\
+ \includegraphics[width=\textwidth]{graph/uk-new-calgary.pdf}
+ \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-time.pdf}
@@ -544,15 +546,16 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \frametitle{Diskussion der eigenen Resultate}
  \begin{itemize}
   \item Nur ein kleiner Teil der Resultate konnte hier diskutiert werden
-  \item Verbreitete Verfahren wie \textit{gzip} erzeugen mit BWT größere Dateien als ohne BWT
+  \item Verbreitete Dictionary-basierte Verfahren wie \textit{Deflate} erzeugen mit BWT größere Dateien als ohne BWT
   \item Kompression von \textit{BWT+MTF+Huffman} erzeugt unter den BWT-Verfahren die besten Größeneinsparungen\\
   \item \textbf{Aber:} Langsame Kompression\\
-  \textrightarrow\ Implementierung langsam?
+  \textrightarrow\ Implementierung langsam? Stark Optimierter  Encoder in C++
  \end{itemize}
  \framebreak
  \begin{itemize}
   \item \textbf{bzip2} nutzt den BWT+MTF+Huffman-Algorithmus - gute Kompression, aber vergleichsweise langsam
   \item \textbf{bzip2}-Dekompression ist nicht deutlich schneller als Kompression
+  \item BWT+MTF+Huffman erzeugt bei Bioinformatik-Datensätzen nur unwesentlich kleinere Dateien als MTF+Huffman
   \end{itemize}
   \framebreak
   \begin{itemize}
