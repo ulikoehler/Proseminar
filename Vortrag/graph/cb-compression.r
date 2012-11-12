@@ -16,6 +16,9 @@ Index firstStage secondStage Compression
 close(con)
 
 #Original size
+df1 <- df1[df1$secondStage!="PPMd-mx9",]
+df1 <- df1[df1$secondStage!="PPMd(large)",]
+df1 <- df1[df1$secondStage!="bzip2",]
 
 df1 <- transform(df1, firstStage = reorder(firstStage, Index))
 library(ggplot2)

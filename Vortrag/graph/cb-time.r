@@ -1,5 +1,5 @@
 df1 <- read.table(header=T, con <- textConnection('
-Index firstStage secondStage Compression
+Index firstStage secondStage Time
   0 Keine bzip2 905
   1 Keine PPMd(default) 324
   2 Keine PPMd(large) 5155
@@ -16,18 +16,21 @@ Index firstStage secondStage Compression
 close(con)
 
 #Original size
+df1 <- df1[df1$secondStage!="PPMd-mx9",]
+df1 <- df1[df1$secondStage!="PPMd(large)",]
+df1 <- df1[df1$secondStage!="bzip2",]
 
 df1 <- transform(df1, firstStage = reorder(firstStage, Index))
 library(ggplot2)
 
 pdf(file="cb-2.pdf",height=5,width=7)
 
-ggplot(data=df1, aes(x=firstStage, y=Compression, fill=secondStage)) + 
+ggplot(data=df1, aes(x=firstStage, y=Time, fill=secondStage)) + 
     geom_bar(colour="black", stat="identity",
              position=position_dodge(),
              size=.3) +                        # Thinner lines
     scale_fill_hue(name="Kompressionsstufe") +      # Set legend title
-    xlab("Codierungsstufe") + ylab("Reduktion in Bits/Base pro Sekunde") + # Set axis labels
-    ggtitle("Kompression / Sekunde nach Cox und Bauer") +  # Set title
+    xlab("Codierungsstufe") + ylab("Kumulative Kompressionsdauer in Sekunden") + # Set axis labels
+    ggtitle("Kompressionsdauer nach Cox und Bauer") +  # Set title
     theme()
     

@@ -10,10 +10,11 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{booktabs}
+
 \usepackage{inconsolata} % TT font
 \usepackage{array}
 \usepackage{url}
-%\usepackage[svgnames]{xcolor}
+%\usepackage[svgnames]{xcolor}\\
 %\usetheme[secheader]{Boadilla}
 %\usefonttheme{sans}
 \setbeamersize{text margin left=1cm,text margin right=1cm}
@@ -25,9 +26,6 @@
 \subtitle{Proseminar \glqq Algorithmen der Bioinformatik\grqq}
 \author{Uli Köhler}
 \date{12.~November 2012}
-
-%Colors
-\definecolor{darkgreen}{RGB}{0,110,29}
 
 \setbeamertemplate{footline}
 {%
@@ -51,14 +49,6 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frametitle{Aufbau dieser Präsentation}
 \tableofcontents
 \end{frame}
-\section{Grundlegende Definitionen}
-\begin{frame}
- \frametitle{Grundlegende Definitionen}
- \begin{itemize}
-  \item Länge eines Strings $S$ : $|S|$
- \end{itemize}
-
-\end{frame}
 
 %%%%%%% Compression basics
 \section{Grundlagen der Datenkompression}
@@ -66,13 +56,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frametitle{Große Datenmengen in der Bioinformatik}
   \begin{itemize}
    \item High-Throughput-Sequencing erzeugt durch \textit{n}-fache Abdeckung große Datenmengen
-   \item Nur 4 Basen  sowie je nach Datensatz weitere \textit{k} Pseudobasen wie z.B \textit{X = nicht definiert}\\
-   \textrightarrow\ Bei einer Speicherung als Text werden\\\quad\ nur $\frac{4+k}{256}$ jedes Bytes benutzt\\
-   \textrightarrow\ Informationsgehalt einer DNA-Sequenz pro\\\quad\ Byte ist vergleichsweise gering
-  \end{itemize}
-\framebreak
-\begin{itemize}
- \item Repeats (z.B. Satelliten) enthalten noch weniger Information pro Byte als eine zufällige DNA-Sequenz
+   \item Speicherung der Daten teuer und langsam
 \end{itemize}
 \framebreak
 \begin{itemize}
@@ -81,10 +65,8 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \quad\ Speicherplatz darstellen
  \item Anforderungen je nach Anwendung:
  \begin{itemize}
-  \item Schnelle Kompression
-  \item Geringe Größe der komprimierten Daten
-  \item Schnelle Dekompression
-  \item Geringe asymptotische Komplexität der Kompression/Dekompression
+  \item Schnelle Kompression/Dekompression
+  \item Wenig Speicherplatzverbrauch
  \end{itemize}
 \end{itemize}
 \end{frame}
@@ -106,16 +88,16 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frametitle{Ein naiver Kompressionsalgorithmus}
 \begin{itemize}
  \item Eingabestring $S := AAAAAAAAATTT$ \textrightarrow $|S| = 12$
- \item Algorithmus fasst gleiche aufeinanderfolgende Zeichen zusammen
- \item Resultat: $S' = $ 9*A,3*T \textrightarrow $|S'|$ = 7
- \item Problem: Viele Strings (z.B. der STR ATATATAT) können nicht komprimiert werden
+ \item Der 	Algorithmus fasst gleiche aufeinanderfolgende Zeichen (\textit{Runs}) zusammen
+ \item Resultat: $S' = $ 9A3T \textrightarrow $|S'|$ = 4\\	\textrightarrow\ 75\% Speicherplatzeinsparung
+ \item Problem: Viele Strings (z.B. \texttt{ATATATAT}) können nicht komprimiert werden
 \end{itemize}
 \framebreak
 \begin{itemize}
- \item Beobachtung: Aufeinanderfolgende gleiche Zeichen können von diesem Algorithmus besser komprimiert werden
- \item Viele reale Kompressionsalgorithmen können davon ebenfalls profitieren\vspace{3mm}
- \item Ist es möglich, einen String reversibel so umzuordnen, dass möglichst viele gleiche Zeichen aufeinanderfolgen?\\
- \textrightarrow\ Burrows-Wheeler-Transformation
+ \item Aufeinanderfolgende gleiche Zeichen können von diesem Algorithmus besser komprimiert werden
+ \item Viele reale Kompressionsalgorithmen können davon ebenfalls profitieren
+ \item Ist es möglich, einen String \textit{reversibel} so umzuordnen, dass möglichst viele, möglichst lange \textit{Runs} auftreten?\\
+ \textrightarrow\ \textbf{Burrows-Wheeler-Transformation}
 \end{itemize}
 \end{frame}
 
@@ -169,7 +151,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \begin{itemize}
   \item Resultat:\\
       Das Tupel \textit{$(L,I)$}, wobei L die {\color{red}letzte Spalte} der Matrix ist
-      und I der Index des {\color{darkgreen}Eingabestrings in der Matrix} ist
+      und I der Index des {\color{blue}Eingabestrings in der Matrix} ist
   \item $(L,I) = (caraab, 1)$
  \end{itemize}
  \column{.45\textwidth}
@@ -177,7 +159,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
     \begin{tabular}{T|T}
     \multicolumn{2}{c}{\textbf{M}}\\
     0 & aabra{\color{red}c} \\
-    {\color{darkgreen}1} & {\color{darkgreen}abrac}{\color{red}a} \\
+    {\color{blue}1} & {\color{blue}abrac}{\color{red}a} \\
     2 & acaab{\color{red}r} \\
     3 & braca{\color{red}a} \\
     4 & caabr{\color{red}a} \\
@@ -195,54 +177,36 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \begin{itemize}
   \item Eingabetupel: $(L,I)$
   \item Initialisierung einer Matrix M der Dimensionen $|L| \times |L|$
-  \item Bereits bekannt: L ist die {\color{darkgreen}letzte Spalte} von M
+  \item Bereits bekannt: L ist die {\color{blue}letzte Spalte} von M
  \end{itemize}
  \column{.35\textwidth}
     \begin{tabular}{T}
     \textbf{M} \\
-    \_\_\_\_\_{\color{darkgreen}c} \\
-    \_\_\_\_\_{\color{darkgreen}a} \\
-    \_\_\_\_\_{\color{darkgreen}r} \\
-    \_\_\_\_\_{\color{darkgreen}a} \\
-    \_\_\_\_\_{\color{darkgreen}a} \\
-    \_\_\_\_\_{\color{darkgreen}b}
+    \_\_\_\_\_{\color{blue}c} \\
+    \_\_\_\_\_{\color{blue}a} \\
+    \_\_\_\_\_{\color{blue}r} \\
+    \_\_\_\_\_{\color{blue}a} \\
+    \_\_\_\_\_{\color{blue}a} \\
+    \_\_\_\_\_{\color{blue}b}
     \end{tabular}
 \end{columns}
 \framebreak
 \begin{columns}[c,onlytextwidth]
  \column{.65\textwidth}
  \begin{itemize}
-  \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
-  \textrightarrow\ Kann durch sortieren von L ausgefüllt werden
- \end{itemize}
- \column{.35\textwidth}
-    \begin{tabular}{T}
-    \textbf{M}\\
-    \ttfamily{\color{darkgreen}a}\_\_\_\_c\\
-    \ttfamily{\color{darkgreen}a}\_\_\_\_a\\
-    \ttfamily{\color{darkgreen}a}\_\_\_\_r\\
-    \ttfamily{\color{darkgreen}b}\_\_\_\_a\\
-    \ttfamily{\color{darkgreen}c}\_\_\_\_a\\
-    \ttfamily{\color{darkgreen}r}\_\_\_\_b\\
-    \end{tabular}
-\end{columns}
-\framebreak
-\begin{columns}[c,onlytextwidth]
- \column{.65\textwidth}
- \begin{itemize}
-  \item Die {\color{darkgreen}erste Spalte} ist immer sortiert
+  \item Die {\color{blue}erste Spalte} ist immer sortiert
   \textrightarrow\ Kann durch sortieren von $L$ ausgefüllt werden
  \end{itemize}
 
  \column{.35\textwidth}
     \begin{tabular}{T}
     \textbf{M} \\
-    {\color{darkgreen}a}\_\_\_\_c\\
-    {\color{darkgreen}a}\_\_\_\_a\\
-    {\color{darkgreen}a}\_\_\_\_r\\
-    {\color{darkgreen}b}\_\_\_\_a\\
-    {\color{darkgreen}c}\_\_\_\_a\\
-    {\color{darkgreen}r}\_\_\_\_b\\
+    {\color{blue}a}\_\_\_\_c\\
+    {\color{blue}a}\_\_\_\_a\\
+    {\color{blue}a}\_\_\_\_r\\
+    {\color{blue}b}\_\_\_\_a\\
+    {\color{blue}c}\_\_\_\_a\\
+    {\color{blue}r}\_\_\_\_b\\
     \end{tabular}
 \end{columns}
 \framebreak
@@ -254,12 +218,12 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \column{.35\textwidth}
  \begin{tabular}{T}
     \textbf{M} \\
-    \_\_\_\_c{\color{darkgreen}a}\\
-    \_\_\_\_a{\color{darkgreen}a}\\
-    \_\_\_\_r{\color{darkgreen}a}\\
-    \_\_\_\_a{\color{darkgreen}b}\\
-    \_\_\_\_a{\color{darkgreen}c}\\
-    \_\_\_\_b{\color{darkgreen}r}
+    \_\_\_\_c{\color{blue}a}\\
+    \_\_\_\_a{\color{blue}a}\\
+    \_\_\_\_r{\color{blue}a}\\
+    \_\_\_\_a{\color{blue}b}\\
+    \_\_\_\_a{\color{blue}c}\\
+    \_\_\_\_b{\color{blue}r}
   \end{tabular}
 \end{columns}
 \framebreak
@@ -415,10 +379,10 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{frame}
  \frametitle{Komprimierbarkeit}
  \begin{itemize}
-  \item Einige Zeichenkombinationen tauchen häufiger in Texten auf als andere, z.B. \textit{he} in \textit{the}
-  \item Alle Zeilen von $M$ die mit \textit{he} beginnen tauchen nacheinander auf (Sortierung)
-  \item Durch Rotation ist bei (fast) allen Zeilen die mit \textit{he} beginnen das letzte Zeichen \textit{t}
-  \textrightarrow\ $L$ enthält viele aufeinanderfolgende Ts
+  \item Einige Zeichenkombinationen tauchen häufiger in Texten auf als andere, z.B. \textit{an} in \textit{and}
+  \item Alle Zeilen von $M$ die mit \textit{nd} beginnen tauchen nacheinander auf (Sortierung)
+  \item Durch Rotation ist bei (fast) allen Zeilen die mit \textit{nd} beginnen das letzte Zeichen \textit{a}\\
+  \textrightarrow\ $L$ enthält viele aufeinanderfolgende \textit{a}
  \end{itemize}
 \end{frame}
 
@@ -429,7 +393,6 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \begin{itemize}
   \item Komplexität der BWT ist $\mathcal{O}(n^2)$\\
     \textrightarrow \ Anwendung der BWT auf sehr große Datensätze (z.B. Genome) skaliert nicht
-    \pause
   \item Lösung: Unterteilung des Datensatzes in kleinere \textit{Blöcke} - Anwendung der BWT auf diese Blöcke
  \end{itemize}
 \end{frame}
@@ -478,8 +441,8 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \frametitle{Diskussion der Resultate von Burrows \& Wheeler}
  \begin{itemize}
   \item Zeitdaten sind kritisch zu bewerten - Hardware von 1994
-  \item Gute Kompression, aber dennoch akzeptables Verhältnis \textit{Kompression / Zeit}
-  \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze, sondern auf Kompressionstestkorpora
+  \item BWT+MTF+Huffman: Gute Kompression, aber dennoch akzeptables Verhältnis \textit{Kompression / Zeit}
+  \item Beispiele beziehen sich nicht auf Bioinformatik-Datensätze, sondern auf einen Kompressionstestkorpus
  \end{itemize}
 \end{frame}
 \begin{frame}[allowframebreaks]
@@ -497,25 +460,47 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \includegraphics[width=\textwidth]{graph/cb-3.pdf}
  \framebreak
  \begin{itemize}
-  \item Im Vergleich zum früheren Verfahren \textit{ReCoil} konnte die Kompression von 1.34 Bits pro Base auf 1.21 Bits pro Base reduziert werden
-  \item Die Kompressionszeit wurde von 14 Stunden auf 1 Stunde gesenkt (auf geringfügig schnellerer Hardware)
+  \item Im Vergleich zu früheren Verfahren konnte die Kompression von 1.34 Bits pro Base auf 1.21 Bits pro Base reduziert werden
+  \item Die Kompressionszeit wurde von 14 Stunden auf 1 Stunde gesenkt (auf schnellerer Hardware)
  \end{itemize}
 \end{frame}
 %%%%%% Own results
 \begin{frame}
  \frametitle{Warum eine eigene Implementierung?}
  \begin{itemize}
-  \item Alle vorgestellten Publikationen verwenden die BWT nur zusammen mit anderen Verfahren
-  \item Grundlegende Frage: Welchen Effekt hat die vorherige Anwendung der reinen BWT mit verschiedenen Blockgrößen auf bekannte Kompressionsalgorithmen?
-  \item Auf eine Speicherung von $I$ wird verzichet\\m
-  \textrightarrow\ Keine Verzerrung der Resultate durch verschiedene Repräsentationen
+  \item Alle vorgestellten Resultate verwenden die BWT zusammen mit anderen Verfahren
+  \item Offene Fragen:
+  \begin{itemize}
+  \item Welchen Effekt hat die vorherige Anwendung der reinen BWT mit verschiedenen Blockgrößen auf bekannte Kompressionsalgorithmen?
+  \item Welche Kombination von anderen Verfahren erzielt für welche Datensätze die besten/schnellsten Resultate?
+  \item Sind moderne (nicht-BWT-basierte) Kompressionsalgorithmen der BWT für bestimmte Anforderungen überlegen?
+  \item Sind Bioinformatikdaten
+  \end{itemize}
+  \item Enwicklung von \textit{eBWT} zum Test
  \end{itemize}
 \end{frame}
+\begin{frame}
+ \frametitle{Methodik}
+ \begin{itemize}
+  \item Erstellung eines Bioinformatik-Kompressionstestkorpus
+  \item Software in \textit{C++} zur Kompression der Datensätze mit verschiedenen Kombinationen von Algorithmen
+  \item Teilweise wird auf Speicherung von kleinen Datenmengen verzichtet, um Verzerrung zu vermeiden
+  \item Messung von:
+  \begin{itemize}
+   \item Kompressionszeit
+   \item Resultierende Dateigröße
+  \end{itemize}
+ \end{itemize}
+
+\end{frame}
+
 \begin{frame}[allowframebreaks]
  \frametitle{Resultate der Eigenimplementierung}
  \includegraphics[width=\textwidth]{graph/uk-1.pdf}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-2.pdf}
+ \framebreak\\
+ \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
 \end{frame}
 \begin{frame}
  \frametitle{Diskussion der eigenen Resultate}
@@ -530,7 +515,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \begin{frame}[allowframebreaks]
  \frametitle{Zusammenfassung}
  \begin{itemize}
-  \item Datenkompression ist aufgrund der enormen Datenmengen die durch Methoden wie High-Throughput-kSequencing entstehen, oftmals notwendig
+  \item Datenkompression ist aufgrund der enormen Datenmengen die durch Methoden wie High-Throughput-Sequencing entstehen, oftmals notwendig
   \item Verschiedene Algorithmen erreichen verschiedene Kompressionsraten und benötigen unterschiedlich viel Rechenzeit
  \end{itemize}
  \framebreak
