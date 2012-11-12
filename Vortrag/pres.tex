@@ -471,12 +471,12 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
   \item Alle vorgestellten Resultate verwenden die BWT zusammen mit anderen Verfahren
   \item Offene Fragen:
   \begin{itemize}
-  \item Welchen Effekt hat die vorherige Anwendung der reinen BWT mit verschiedenen Blockgrößen auf bekannte Kompressionsalgorithmen?
+  \item Wie verhält sich die BWT alleine und zusammen mit anderen Verfahren
   \item Welche Kombination von anderen Verfahren erzielt für welche Datensätze die besten/schnellsten Resultate?
   \item Sind moderne (nicht-BWT-basierte) Kompressionsalgorithmen der BWT für bestimmte Anforderungen überlegen?
-  \item Sind Bioinformatikdaten
+  \item Welche Blockgrößen sind für die BWT optimal?
+  \item Sind Bioinformatikdaten mit den bekannten Kompressionstestkorpora vergleichbar?
   \end{itemize}
-  \item Enwicklung von \textit{eBWT} zum Test
  \end{itemize}
 \end{frame}
 \begin{frame}
@@ -491,7 +491,10 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
    \item Resultierende Dateigröße
   \end{itemize}
  \end{itemize}
-
+\end{frame}
+\begin{frame}
+ \frametitle{Implementierte Verfahren}
+ \includegraphics[width=\textwidth]{../Algorithms-Venn.pdf}
 \end{frame}
 
 \begin{frame}[allowframebreaks]
@@ -501,12 +504,16 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  \includegraphics[width=\textwidth]{graph/uk-2.pdf}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
+ \framebreak\\
+ \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
+ \framebreak\\
+ \includegraphics[width=\textwidth]{graph/uk-time.pdf}
 \end{frame}
 \begin{frame}
  \frametitle{Diskussion der eigenen Resultate}
  \begin{itemize}
-  \item Die Ausgangsdateigrößen vor- und nach der BWT sind identisch
-  \item \textbf{Konklusion:} Um die BWT mit klassischen Kompressionsalgorithmen nutzen zu können ist eine andere Codierung, z.B. die \textit{Move-To-Front-Codierung} erforderlich
+  \item Verbreitete Verfahren wie \textit{gzip} erzeugen mit BWT größere Dateien als ohne BWT
+  \item Kompression von \textit{BWT+MTF+Huffman}
   \item Die Resultate von Burrows und Wheeler zeigen, dass sowohl die Move-To-Front-Codierung als auch die Huffman-Kodierung effektiv sind
  \end{itemize}
 \end{frame}
