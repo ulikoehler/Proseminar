@@ -47,7 +47,24 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frame{\titlepage}
 \begin{frame}
 \frametitle{Aufbau dieser Präsentation}
-\tableofcontents
+\begin{itemize}
+ \item Kompression in der Bioinformatik
+ \item Die Burrows-Wheeler-Transformation
+ \begin{itemize}
+  \item Algorithmus der Hintransformation
+  \item Algorithmus der Rücktransformation
+  \item Probleme der BWT
+ \end{itemize}
+ \item Diskussion verschiedener Resultate
+ \begin{itemize}
+  \item Burrows \& Wheeler
+  \item Cox \& Bauer
+  \item Eigene Resultate
+ \end{itemize}
+
+
+\end{itemize}
+
 \end{frame}
 
 %%%%%%% Compression basics
@@ -56,7 +73,8 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \frametitle{Große Datenmengen in der Bioinformatik}
   \begin{itemize}
    \item High-Throughput-Sequencing erzeugt durch \textit{n}-fache Abdeckung große Datenmengen
-   \item Speicherung der Daten teuer und langsam
+   \item Oft Speicherung der Rohdaten gewünscht
+   \item Speicherplatz ist teuer, teils langsamer Zugriff
 \end{itemize}
 \framebreak
 \begin{itemize}
@@ -83,7 +101,7 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 \framebreak
 \begin{itemize}
  \item Aufeinanderfolgende gleiche Zeichen können von diesem Algorithmus besser komprimiert werden
- \item Viele reale Kompressionsalgorithmen können davon ebenfalls profitieren
+ \item Einige reale Kompressionsalgorithmen können davon ebenfalls profitieren
  \item Ist es möglich, einen String \textit{reversibel} so umzuordnen, dass möglichst viele, möglichst lange \textit{Runs} auftreten?\\
  \textrightarrow\ \textbf{Burrows-Wheeler-Transformation}
 \end{itemize}
@@ -376,7 +394,15 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
  S_j &:= L_{i+1}
  \end{align}
 \end{itemize}
-
+\end{frame}
+%% Suffix trees etc.
+\begin{frame}
+\frametitle{Effiziente Kompression}
+\begin{itemize}
+\item Die Kompression kann effizient mit \textbf{Suffix Trees} implementiert werden
+\item Aber: Suffix Trees sind auf realer Hardware vergleichsweise langsam \\
+\textrightarrow\ Lösung: \textbf{Suffix Arrays} \textrightarrow\ Vortrag am 19.11.2012
+\end{itemize}
 \end{frame}
 %%%%%% Why it compresses well
 \begin{frame}
@@ -506,11 +532,9 @@ Folie \insertframenumber{} von \inserttotalframenumber\hspace{8mm}
 
 \begin{frame}[allowframebreaks]
  \frametitle{Resultate der Eigenimplementierung}
- \includegraphics[width=\textwidth]{graph/uk-1.pdf}
- \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-2.pdf}
  \framebreak\\
- \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
+ \includegraphics[width=\textwidth]{graph/uk-1.pdf}
  \framebreak\\
  \includegraphics[width=\textwidth]{graph/uk-new-celegans.pdf}
  \framebreak\\

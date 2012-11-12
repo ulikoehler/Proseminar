@@ -24,7 +24,7 @@ df1 <- df1[df1$Algorithm!="xz",]
 df1 <- df1[df1$Algorithm!="xz -e9",]
 df1 <- df1[df1$Algorithm!="compress",]
 
-df1 <- transform(df1, Index = reorder(Index, Algorithm))
+#df1 <- transform(df1, Index = reorder(Index, Algorithm))
 library(ggplot2)
 
 pdf(file="uk-2.pdf",height=5,width=7)

@@ -21,7 +21,7 @@ ggplot(data=df1, aes(x=Algorithm, y=Time, fill=Type)) +
              position=position_dodge(),
              size=.3) +                        # Thinner lines
     scale_fill_hue(name="Typ") +      # Set legend title
-    xlab("Algorithmus") + ylab("Zeit(s)") + # Set axis labels
+    xlab("Algorithmus") + ylab("Dauer (s)") + # Set axis labels
     ggtitle("Zeitaufwand verschiedener Algorithmen") +  # Set title
     theme()
     
